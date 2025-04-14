@@ -1,0 +1,39 @@
+# 컴파일된 출력물
+/dist
+/tmp
+/out-tsc
+
+# 의존성
+/node_modules
+
+# IDE 설정
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# 기타
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
