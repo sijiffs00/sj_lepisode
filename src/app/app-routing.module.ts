@@ -1,10 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from './login/login.component';
+import { MainComponent } from './main/main.component';
 
 const routes: Routes = [
-  // 여기에 라우트 설정 추가
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  // { path: 'home', component: HomeComponent },
+  { path: '', component: LoginComponent },
+  { path: 'login', component: LoginComponent },
+  { path: 'main', component: MainComponent },
 ];
 
 @NgModule({
