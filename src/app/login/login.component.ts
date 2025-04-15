@@ -2,6 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../supabase';
 
+interface RegisterForm {
+  email: string;
+  name: string;
+  password: string;
+  passwordConfirm: string;
+  department: string;
+  position: string;
+  contact: string;
+  company_name: string;
+}
+
 @Component({
   selector: 'app-login',
   template: `
@@ -10,10 +21,11 @@ import { supabase } from '../supabase';
       <div class="logo-section">
         <h1 class="logo-text">광주전남벤처기업협회</h1>
         <p class="logo-subtitle">GWANGJU JEONNAM VENTURE BUSINESS ASSOCIATION</p>
-        <!-- Supabase 연결 상태 표시 -->
-        <p class="connection-status" [class.error]="connectionStatus.includes('❌')" [class.success]="connectionStatus.includes('✅')">
-          {{ connectionStatus }}
-        </p>
+      </div>
+
+      <!-- 연결 상태 표시 -->
+      <div class="connection-status">
+        <small>{{ connectionStatus }}</small>
       </div>
 
       <!-- 탭 버튼 -->
@@ -51,36 +63,107 @@ import { supabase } from '../supabase';
       </form>
 
       <!-- 회원가입 폼 -->
-      <form *ngIf="activeTab === 'register'" class="auth-form">
+      <form *ngIf="activeTab === 'register'" class="auth-form" (ngSubmit)="handleRegister()">
         <div class="form-group">
-          <label>이메일</label>
+          <label>이메일 <span class="required">*</span></label>
           <div class="input-with-icon">
             <span class="material-icons">mail</span>
-            <input type="email" placeholder="이메일을 입력하세요">
+            <input 
+              type="email" 
+              [(ngModel)]="registerForm.email" 
+              name="email" 
+              placeholder="이메일을 입력하세요"
+              required>
           </div>
         </div>
         <div class="form-group">
-          <label>이름</label>
+          <label>이름 <span class="required">*</span></label>
           <div class="input-with-icon">
             <span class="material-icons">person</span>
-            <input type="text" placeholder="이름을 입력하세요">
+            <input 
+              type="text" 
+              [(ngModel)]="registerForm.name" 
+              name="name" 
+              placeholder="이름을 입력하세요"
+              required>
           </div>
         </div>
         <div class="form-group">
-          <label>비밀번호</label>
+          <label>소속회사명 <span class="required">*</span></label>
           <div class="input-with-icon">
-            <span class="material-icons">lock</span>
-            <input type="password" placeholder="비밀번호를 입력하세요">
+            <span class="material-icons">business</span>
+            <input 
+              type="text" 
+              [(ngModel)]="registerForm.company_name" 
+              name="company_name" 
+              placeholder="소속회사명을 입력하세요"
+              required>
           </div>
         </div>
         <div class="form-group">
-          <label>비밀번호 확인</label>
+          <label>부서</label>
           <div class="input-with-icon">
-            <span class="material-icons">lock</span>
-            <input type="password" placeholder="비밀번호를 다시 입력하세요">
+            <span class="material-icons">groups</span>
+            <input 
+              type="text" 
+              [(ngModel)]="registerForm.department" 
+              name="department" 
+              placeholder="부서를 입력하세요">
           </div>
         </div>
-        <button type="submit" class="submit-btn">회원가입</button>
+        <div class="form-group">
+          <label>직책</label>
+          <div class="input-with-icon">
+            <span class="material-icons">badge</span>
+            <input 
+              type="text" 
+              [(ngModel)]="registerForm.position" 
+              name="position" 
+              placeholder="직책을 입력하세요">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>연락처 <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <span class="material-icons">phone</span>
+            <input 
+              type="tel" 
+              [(ngModel)]="registerForm.contact" 
+              name="contact" 
+              placeholder="연락처를 입력하세요"
+              required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>비밀번호 <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <span class="material-icons">lock</span>
+            <input 
+              type="password" 
+              [(ngModel)]="registerForm.password" 
+              name="password" 
+              placeholder="비밀번호를 입력하세요"
+              required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>비밀번호 확인 <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <span class="material-icons">lock</span>
+            <input 
+              type="password" 
+              [(ngModel)]="registerForm.passwordConfirm" 
+              name="passwordConfirm" 
+              placeholder="비밀번호를 다시 입력하세요"
+              required>
+          </div>
+          <small class="error-message" *ngIf="passwordMismatch">
+            비밀번호가 일치하지 않습니다.
+          </small>
+        </div>
+        <button type="submit" class="submit-btn" [disabled]="isLoading">
+          {{ isLoading ? '처리중...' : '회원가입' }}
+        </button>
       </form>
     </div>
   `,
@@ -228,27 +311,41 @@ import { supabase } from '../supabase';
     }
 
     .connection-status {
-      margin-top: 10px;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
       padding: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
       border-radius: 4px;
-      font-size: 14px;
-      text-align: center;
-      background-color: #f8f9fa;
+      font-size: 12px;
+      color: #666;
+      z-index: 1000;
+      opacity: 0.7;
+      transition: opacity 0.3s;
     }
-
-    .connection-status.error {
-      color: #dc3545;
-      background-color: #f8d7da;
-    }
-
-    .connection-status.success {
-      color: #28a745;
-      background-color: #d4edda;
+    .connection-status:hover {
+      opacity: 1;
     }
 
     .material-icons {
       font-family: 'Material Icons';
       font-size: 20px;
+    }
+
+    .required {
+      color: #dc3545;
+      margin-left: 4px;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
     }
   `]
 })
@@ -257,29 +354,36 @@ export class LoginComponent implements OnInit {
   connectionStatus: string = '연결 확인 중...';
   loginEmail: string = '';
   loginPassword: string = '';
+  isLoading: boolean = false;
+  passwordMismatch: boolean = false;
+
+  registerForm: RegisterForm = {
+    email: '',
+    name: '',
+    password: '',
+    passwordConfirm: '',
+    department: '',
+    position: '',
+    contact: '',
+    company_name: ''
+  };
 
   constructor(private router: Router) {}
 
   async ngOnInit() {
     try {
-      // Supabase 연결 테스트
       const { data: { session }, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         this.connectionStatus = '❌ Supabase 연결 실패: ' + error.message;
         console.error('Supabase 연결 에러:', error);
       } else {
-        this.connectionStatus = '✅ Supabase 연결 성공!';
+        this.connectionStatus = '✅ Supabase 연결 상태: 정상';
         console.log('Supabase 연결 성공!');
-        
-        // 이미 로그인된 세션이 있다면 메인 페이지로 이동
-        if (session) {
-          this.router.navigate(['/main']);
-        }
       }
-    } catch (err) {
+    } catch (error) {
       this.connectionStatus = '❌ 연결 중 에러 발생';
-      console.error('에러:', err);
+      console.error('에러:', error);
     }
   }
 
@@ -301,5 +405,77 @@ export class LoginComponent implements OnInit {
       console.error('로그인 중 에러 발생:', err);
       alert('로그인 중 에러가 발생했습니다.');
     }
+  }
+
+  async handleRegister() {
+    // 필수 필드 검증
+    if (!this.registerForm.email || !this.registerForm.name || 
+        !this.registerForm.password || !this.registerForm.passwordConfirm ||
+        !this.registerForm.contact || !this.registerForm.company_name) {
+      alert('필수 항목을 모두 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 일치 검증
+    if (this.registerForm.password !== this.registerForm.passwordConfirm) {
+      this.passwordMismatch = true;
+      return;
+    }
+    this.passwordMismatch = false;
+
+    try {
+      this.isLoading = true;
+
+      // 1. Supabase Auth로 회원가입
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: this.registerForm.email,
+        password: this.registerForm.password
+      });
+
+      if (authError) throw authError;
+
+      // 2. users 테이블에 추가 정보 저장
+      const { error: userError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: authData.user?.id,  // Auth에서 생성된 UUID
+            email: this.registerForm.email,
+            name: this.registerForm.name,
+            department: this.registerForm.department,
+            position: this.registerForm.position,
+            contact: this.registerForm.contact,
+            company: {
+              name: this.registerForm.company_name
+            },
+            auth_status: 'pending'  // 관리자 승인 대기 상태
+          }
+        ]);
+
+      if (userError) throw userError;
+
+      alert('회원가입이 완료되었습니다. 관리자 승인 후 로그인이 가능합니다.');
+      this.activeTab = 'login';  // 로그인 탭으로 전환
+      this.resetForm();
+
+    } catch (error) {
+      console.error('회원가입 에러:', error);
+      alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private resetForm() {
+    this.registerForm = {
+      email: '',
+      name: '',
+      password: '',
+      passwordConfirm: '',
+      department: '',
+      position: '',
+      contact: '',
+      company_name: ''
+    };
   }
 } 

@@ -4,11 +4,28 @@ import { supabase } from '../supabase';
 @Component({
   selector: 'app-supabase-test',
   template: `
-    <div>
-      <h2>Supabase 연결 테스트</h2>
-      <p>{{ connectionStatus }}</p>
+    <div class="connection-status">
+      <small>{{ connectionStatus }}</small>
     </div>
-  `
+  `,
+  styles: [`
+    .connection-status {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      padding: 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+      z-index: 1000;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .connection-status:hover {
+      opacity: 1;
+    }
+  `]
 })
 export class SupabaseTestComponent implements OnInit {
   connectionStatus: string = '테스트 중...';
@@ -25,7 +42,7 @@ export class SupabaseTestComponent implements OnInit {
         this.connectionStatus = '❌ Supabase 연결 실패: ' + error.message;
         console.error('Supabase 연결 에러:', error);
       } else {
-        this.connectionStatus = '✅ Supabase 연결 성공!';
+        this.connectionStatus = '✅ Supabase 연결 상태: 정상';
         console.log('Supabase 연결 성공!');
       }
     } catch (err) {
