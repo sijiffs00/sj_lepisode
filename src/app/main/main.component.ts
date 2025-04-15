@@ -1,5 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { supabase } from '../supabase';
+
+interface UserProfile {
+  id: number;
+  name: string;
+  position: string;
+  auth_status: string;
+  company_appl: string;
+  department: string;
+  contact: string;
+  email: string;
+}
 
 @Component({
   selector: 'app-main',
@@ -7,10 +19,6 @@ import { Router } from '@angular/router';
     <div class="main-container">
       <!-- 메인 컨텐츠 영역 -->
       <div class="content">
-        <div class="header">
-          <h1>광주전남벤처기업협회</h1>
-        </div>
-
         <!-- 각 탭에 따른 컨텐츠 영역 -->
         <div [ngSwitch]="currentTab">
           <!-- 통합검색 -->
@@ -48,48 +56,42 @@ import { Router } from '@angular/router';
 
           <!-- 마이페이지 -->
           <div *ngSwitchCase="'mypage'" class="content-area mypage">
-            <!-- 상단 헤더 -->
-            <div class="mypage-header">
-              <div class="logo">
-                <img src="assets/gjva-logo.png" alt="GJVA">
-                <span>(사)광주전남벤처기업협회</span>
-              </div>
-              <button class="auth-button">권한인증</button>
-            </div>
-
             <h2>마이페이지</h2>
 
             <!-- 내 프로필 섹션 -->
             <section class="profile-section">
               <h3>내 프로필</h3>
-              <div class="profile-card">
+              <div class="profile-card" *ngIf="userProfile">
                 <div class="name-row">
-                  <span class="name">양주성</span>
-                  <span class="position">이사</span>
-                  <button class="status-badge">승인 완료</button>
+                  <span class="name">{{ userProfile.name }}</span>
+                  <span class="position">{{ userProfile.position }}</span>
+                  <button class="status-badge">{{ userProfile.auth_status }}</button>
                 </div>
                 <div class="info-list">
                   <div class="info-item">
                     <span class="check-icon">✓</span>
                     <span class="label">소속</span>
-                    <span class="value">(주)레피소드주식회사</span>
+                    <span class="value">{{ userProfile.company_appl }}</span>
                   </div>
                   <div class="info-item">
                     <span class="check-icon">✓</span>
                     <span class="label">직위/직책</span>
-                    <span class="value">대표</span>
+                    <span class="value">{{ userProfile.position }}</span>
                   </div>
                   <div class="info-item">
                     <span class="check-icon">✓</span>
                     <span class="label">연락처</span>
-                    <span class="value">010-1234-5678</span>
+                    <span class="value">{{ userProfile.contact }}</span>
                   </div>
                   <div class="info-item">
                     <span class="check-icon">✓</span>
                     <span class="label">이메일</span>
-                    <span class="value">example&#64;lepisode.team</span>
+                    <span class="value">{{ userProfile.email }}</span>
                   </div>
                 </div>
+              </div>
+              <div *ngIf="!userProfile" class="loading">
+                프로필 정보를 불러오는 중...
               </div>
               <button class="action-button">회원 정보 수정</button>
               <button class="action-button">회원 탈퇴</button>
@@ -212,35 +214,6 @@ import { Router } from '@angular/router';
       padding: 0;
     }
 
-    .mypage-header {
-      background: #3C8BB5;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .logo img {
-      height: 24px;
-    }
-
-    .auth-button {
-      background: white;
-      color: #3C8BB5;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-
     .profile-section, .company-section {
       background: white;
       margin: 16px;
@@ -249,7 +222,7 @@ import { Router } from '@angular/router';
     }
 
     h3 {
-      background: #3C8BB5;
+      background: #0891B2;
       color: white;
       margin: 0;
       padding: 16px;
@@ -277,14 +250,14 @@ import { Router } from '@angular/router';
     }
 
     .position {
-      color: #3C8BB5;
+      color: #0891B2;
       font-size: 14px;
     }
 
     .status-badge {
       margin-left: auto;
       background: #E8F5FF;
-      color: #3C8BB5;
+      color: #0891B2;
       border: none;
       padding: 4px 12px;
       border-radius: 4px;
@@ -305,7 +278,7 @@ import { Router } from '@angular/router';
     }
 
     .check-icon {
-      color: #3C8BB5;
+      color: #0891B2;
     }
 
     .label {
@@ -431,8 +404,41 @@ import { Router } from '@angular/router';
     }
   `]
 })
-export class MainComponent {
+export class MainComponent implements OnInit {
   currentTab: 'search' | 'notice' | 'org' | 'company' | 'mypage' = 'mypage';
+  userProfile: UserProfile | null = null;
 
   constructor(private router: Router) {}
+
+  async ngOnInit() {
+    await this.loadUserProfile();
+  }
+
+  async loadUserProfile() {
+    try {
+      // 현재 로그인한 유저 정보 가져오기
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        this.router.navigate(['/login']);
+        return;
+      }
+
+      // users 테이블에서 현재 유저의 프로필 정보 가져오기
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', user.email)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return;
+      }
+
+      this.userProfile = userProfile;
+    } catch (error) {
+      console.error('Error in loadUserProfile:', error);
+    }
+  }
 } 
