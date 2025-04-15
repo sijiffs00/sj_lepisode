@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { supabase } from '../supabase';
 
 @Component({
   selector: 'app-login',
@@ -8,6 +10,10 @@ import { Component } from '@angular/core';
       <div class="logo-section">
         <h1 class="logo-text">광주전남벤처기업협회</h1>
         <p class="logo-subtitle">GWANGJU JEONNAM VENTURE BUSINESS ASSOCIATION</p>
+        <!-- Supabase 연결 상태 표시 -->
+        <p class="connection-status" [class.error]="connectionStatus.includes('❌')" [class.success]="connectionStatus.includes('✅')">
+          {{ connectionStatus }}
+        </p>
       </div>
 
       <!-- 탭 버튼 -->
@@ -21,19 +27,19 @@ import { Component } from '@angular/core';
       </div>
 
       <!-- 로그인 폼 -->
-      <form *ngIf="activeTab === 'login'" class="auth-form">
+      <form *ngIf="activeTab === 'login'" class="auth-form" (ngSubmit)="handleLogin()">
         <div class="form-group">
           <label>이메일</label>
           <div class="input-with-icon">
             <span class="material-icons">mail</span>
-            <input type="email" placeholder="이메일을 입력하세요">
+            <input type="email" [(ngModel)]="loginEmail" name="email" placeholder="이메일을 입력하세요">
           </div>
         </div>
         <div class="form-group">
           <label>비밀번호</label>
           <div class="input-with-icon">
             <span class="material-icons">lock</span>
-            <input type="password" placeholder="비밀번호를 입력하세요">
+            <input type="password" [(ngModel)]="loginPassword" name="password" placeholder="비밀번호를 입력하세요">
           </div>
         </div>
         <button type="submit" class="submit-btn">로그인</button>
@@ -220,8 +226,80 @@ import { Component } from '@angular/core';
       background: #0056b3;
       transform: translateY(-2px);
     }
+
+    .connection-status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 14px;
+      text-align: center;
+      background-color: #f8f9fa;
+    }
+
+    .connection-status.error {
+      color: #dc3545;
+      background-color: #f8d7da;
+    }
+
+    .connection-status.success {
+      color: #28a745;
+      background-color: #d4edda;
+    }
+
+    .material-icons {
+      font-family: 'Material Icons';
+      font-size: 20px;
+    }
   `]
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   activeTab: 'login' | 'register' = 'login';
+  connectionStatus: string = '연결 확인 중...';
+  loginEmail: string = '';
+  loginPassword: string = '';
+
+  constructor(private router: Router) {}
+
+  async ngOnInit() {
+    try {
+      // Supabase 연결 테스트
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        this.connectionStatus = '❌ Supabase 연결 실패: ' + error.message;
+        console.error('Supabase 연결 에러:', error);
+      } else {
+        this.connectionStatus = '✅ Supabase 연결 성공!';
+        console.log('Supabase 연결 성공!');
+        
+        // 이미 로그인된 세션이 있다면 메인 페이지로 이동
+        if (session) {
+          this.router.navigate(['/main']);
+        }
+      }
+    } catch (err) {
+      this.connectionStatus = '❌ 연결 중 에러 발생';
+      console.error('에러:', err);
+    }
+  }
+
+  async handleLogin() {
+    try {
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email: this.loginEmail,
+        password: this.loginPassword
+      });
+
+      if (error) {
+        console.error('로그인 에러:', error.message);
+        alert('로그인 실패: ' + error.message);
+      } else {
+        console.log('로그인 성공:', user);
+        this.router.navigate(['/main']);
+      }
+    } catch (err) {
+      console.error('로그인 중 에러 발생:', err);
+      alert('로그인 중 에러가 발생했습니다.');
+    }
+  }
 } 
