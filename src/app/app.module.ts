@@ -8,13 +8,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { SupabaseTestComponent } from './supabase-test/supabase-test.component';
+import { RegisterComponent } from './register/register.component';
+import { PendingComponent } from './pending/pending.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     MainComponent,
-    SupabaseTestComponent
+    SupabaseTestComponent,
+    RegisterComponent,
+    PendingComponent
   ],
   imports: [
     BrowserModule,

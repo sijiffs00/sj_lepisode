@@ -14,6 +14,24 @@ interface RegisterForm {
   position: string;
 }
 
+// 사용자 정보 인터페이스 정의
+interface UserInfo {
+  id: number;  // 카카오 ID (int8)
+  name: string | null;
+  joined_at: string;
+  registered_at: string;
+  auth_status: string | null;
+  company_approved: string | null;
+  department: string | null;
+  position: string | null;
+  contact: string | null;
+  email: string | null;
+  association_role: string | null;
+  org_chart_id: string | null;
+  company_id: string | null;
+  company: any | null;
+}
+
 @Component({
   selector: 'app-login',
   template: `
@@ -23,7 +41,6 @@ interface RegisterForm {
         <div class="top-image-container">
           <div class="logo-section">
             <div class="logo-box">
-              <img src="assets/kova-logo.png" alt="KOVA" class="logo-image">
               <span class="logo-text">(사)광주전남벤처기업협회</span>
             </div>
             <p class="logo-subtitle">GWANGJU JEONNAM VENTURE BUSINESS ASSOCIATION</p>
@@ -90,16 +107,11 @@ interface RegisterForm {
       margin-bottom: 8px;
     }
 
-    .logo-image {
-      width: 80px;
-      height: auto;
-      margin-right: 8px;
-    }
-
     .logo-text {
       color: white;
-      font-size: 18px;
-      font-weight: 500;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
     }
 
     .logo-subtitle {
@@ -278,7 +290,6 @@ export class LoginComponent implements OnInit {
   }
 
   private initializeKakao() {
-    // 카카오 JavaScript 키
     const KAKAO_JS_KEY = 'a854fc1241de8719121800ead8887a6d';
     
     try {
@@ -293,24 +304,24 @@ export class LoginComponent implements OnInit {
     try {
       // 카카오 로그인 요청
       await Kakao.Auth.login({
-        scope: 'profile_nickname', // 닉네임만 요청
         success: (authObj: any) => {
           console.log('Kakao login success:', authObj);
           
           // 사용자 정보 가져오기
           Kakao.API.request({
             url: '/v2/user/me',
-            success: (res: any) => {
+            success: async (res: any) => {
               console.log('User info:', res);
-              const kakaoAccount = res.kakao_account;
               
-              // 닉네임만 처리
-              const userInfo = {
-                id: res.id,
-                nickname: kakaoAccount?.profile?.nickname
+              // 기본 사용자 정보 구성
+              const userInfo: Partial<UserInfo> = {
+                id: parseInt(res.id), // 문자열로 오는 카카오 ID를 숫자로 변환
+                name: res.kakao_account?.profile?.nickname || null,
+                joined_at: new Date().toISOString(),
+                registered_at: new Date().toISOString(),
+                auth_status: 'pending'  // 관리자 승인 대기 상태
               };
               
-              // 로그인 처리
               this.handleKakaoLogin(userInfo);
             },
             fail: (error: any) => {
@@ -330,17 +341,47 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  private async handleKakaoLogin(userInfo: any) {
+  private async handleKakaoLogin(userInfo: Partial<UserInfo>) {
     try {
-      console.log('카카오 로그인 성공! 닉네임:', userInfo.nickname);
-      
-      // TODO: 백엔드 API 호출하여 회원가입/로그인 처리
-      // const response = await this.authService.loginWithKakao(userInfo);
-      
-      // 임시로 메인 페이지로 이동
-      this.router.navigate(['/main']);
+      // Supabase에서 사용자 조회
+      const { data: existingUser, error: selectError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userInfo.id)
+        .single();
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        console.error('사용자 조회 중 에러:', selectError);
+        alert('회원 정보 조회 중 오류가 발생했습니다.');
+        return;
+      }
+
+      if (existingUser) {
+        // 기존 회원: 마지막 로그인 시간 업데이트
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ joined_at: new Date().toISOString() })
+          .eq('id', userInfo.id);
+
+        if (updateError) {
+          console.error('로그인 시간 업데이트 실패:', updateError);
+        }
+
+        // 승인 상태 확인
+        if (existingUser.auth_status === 'approved') {
+          this.router.navigate(['/main']);
+        } else {
+          alert('관리자 승인 대기 중입니다.');
+          this.router.navigate(['/pending']);
+        }
+      } else {
+        // 신규 회원: 회원가입 페이지로 이동
+        this.router.navigate(['/register'], { 
+          state: { kakaoInfo: userInfo }
+        });
+      }
     } catch (error) {
-      console.error('Failed to process login:', error);
+      console.error('로그인 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');
     }
   }
