@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../supabase';
 
+declare const Kakao: any;
+
 interface RegisterForm {
   email: string;
   name: string;
@@ -16,428 +18,202 @@ interface RegisterForm {
   selector: 'app-login',
   template: `
     <div class="auth-container">
-      <!-- 로고 영역 -->
-      <div class="logo-section">
-        <h1 class="logo-text">광주전남벤처기업협회</h1>
-        <p class="logo-subtitle">GWANGJU JEONNAM VENTURE BUSINESS ASSOCIATION</p>
+      <div class="content-wrapper">
+        <!-- 상단 이미지 영역 -->
+        <div class="top-image-container">
+          <div class="logo-section">
+            <div class="logo-box">
+              <img src="assets/kova-logo.png" alt="KOVA" class="logo-image">
+              <span class="logo-text">(사)광주전남벤처기업협회</span>
+            </div>
+            <p class="logo-subtitle">GWANGJU JEONNAM VENTURE BUSINESS ASSOCIATION</p>
+          </div>
+        </div>
+
+        <!-- 로그인 섹션 -->
+        <div class="login-section">
+          <h2 class="login-title">SNS로 간편하게 로그인</h2>
+          
+          <button class="kakao-login-btn" (click)="loginWithKakao()">
+            <span class="chat-icon">💬</span>
+            카카오로 계속하기
+          </button>
+
+          <p class="terms-text">
+            로그인하시면 이용약관, 개인정보 수집 및 이용에<br>
+            동의하는 것으로 간주됩니다.
+          </p>
+        </div>
       </div>
-
-      <!-- 연결 상태 표시 -->
-      <div class="connection-status">
-        <small>{{ connectionStatus }}</small>
-      </div>
-
-      <!-- 탭 버튼 -->
-      <div class="tab-buttons">
-        <button 
-          [class.active]="activeTab === 'login'"
-          (click)="activeTab = 'login'">로그인</button>
-        <button 
-          [class.active]="activeTab === 'register'"
-          (click)="activeTab = 'register'">회원가입</button>
-      </div>
-
-      <!-- 로그인 폼 -->
-      <form *ngIf="activeTab === 'login'" class="auth-form" (ngSubmit)="handleLogin()">
-        <div class="form-group">
-          <label>이메일</label>
-          <div class="input-with-icon">
-            <span class="material-icons">mail</span>
-            <input 
-              type="email" 
-              [(ngModel)]="loginEmail" 
-              name="email" 
-              (ngModelChange)="onEmailChange($event)"
-              [class.invalid-input]="!isEmailValid"
-              placeholder="이메일을 입력하세요">
-          </div>
-          <small class="error-message" *ngIf="!isEmailValid && emailErrorMessage">
-            {{ emailErrorMessage }}
-          </small>
-        </div>
-        <div class="form-group">
-          <label>비밀번호</label>
-          <div class="input-with-icon">
-            <span class="material-icons">lock</span>
-            <input type="password" [(ngModel)]="loginPassword" name="password" placeholder="비밀번호를 입력하세요">
-          </div>
-        </div>
-        <button type="submit" class="submit-btn">로그인</button>
-        <div class="help-links">
-          <a href="#" class="help-link">이메일 찾기</a>
-          <span class="divider">|</span>
-          <a href="#" class="help-link">비밀번호 찾기</a>
-        </div>
-      </form>
-
-      <!-- 회원가입 폼 -->
-      <form *ngIf="activeTab === 'register'" class="auth-form" (ngSubmit)="handleRegister()">
-        <div class="form-group">
-          <label>이메일 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">mail</span>
-            <input 
-              type="email" 
-              [(ngModel)]="registerForm.email" 
-              name="email" 
-              (ngModelChange)="onEmailChange($event, true)"
-              [class.invalid-input]="!isEmailValid"
-              placeholder="이메일을 입력하세요"
-              required>
-          </div>
-          <small class="error-message" *ngIf="!isEmailValid && emailErrorMessage">
-            {{ emailErrorMessage }}
-          </small>
-        </div>
-        <div class="form-group">
-          <label>이름 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">person</span>
-            <input 
-              type="text" 
-              [(ngModel)]="registerForm.name" 
-              name="name" 
-              placeholder="이름을 입력하세요"
-              required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>연락처 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">phone</span>
-            <input 
-              type="tel" 
-              [(ngModel)]="registerForm.contact" 
-              name="contact" 
-              placeholder="연락처를 입력하세요"
-              required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>부서</label>
-          <div class="input-with-icon">
-            <span class="material-icons">business</span>
-            <input 
-              type="text" 
-              [(ngModel)]="registerForm.department" 
-              name="department" 
-              placeholder="소속 부서를 입력하세요">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>직책</label>
-          <div class="input-with-icon">
-            <span class="material-icons">badge</span>
-            <select 
-              [(ngModel)]="registerForm.position" 
-              name="position" 
-              class="position-select"
-              placeholder="직책을 선택하세요">
-              <option value="">직책을 선택하세요</option>
-              <option *ngFor="let pos of positionOptions" [value]="pos">
-                {{pos}}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>비밀번호 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">lock</span>
-            <input 
-              type="password" 
-              [(ngModel)]="registerForm.password" 
-              name="password" 
-              (ngModelChange)="onPasswordChange()"
-              [class.invalid-input]="!passwordValidation.isValid && registerForm.password"
-              placeholder="비밀번호를 입력하세요"
-              required>
-          </div>
-          <small class="error-message" *ngIf="!passwordValidation.isValid && registerForm.password">
-            {{ passwordValidation.message }}
-          </small>
-          <small class="info-message">
-            * 비밀번호는 6자 이상, 영문과 숫자를 포함해야 합니다.
-          </small>
-        </div>
-        <div class="form-group">
-          <label>비밀번호 확인 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">lock</span>
-            <input 
-              type="password" 
-              [(ngModel)]="registerForm.passwordConfirm" 
-              name="passwordConfirm" 
-              (ngModelChange)="onPasswordChange()"
-              [class.invalid-input]="passwordMismatch"
-              placeholder="비밀번호를 다시 입력하세요"
-              required>
-          </div>
-          <small class="error-message" *ngIf="passwordMismatch">
-            비밀번호가 일치하지 않습니다.
-          </small>
-          <small class="success-message" *ngIf="registerForm.password && registerForm.passwordConfirm && !passwordMismatch">
-            비밀번호가 일치합니다! ✓
-          </small>
-        </div>
-        <button 
-          type="submit" 
-          class="submit-btn" 
-          [disabled]="!isFormValid() || isLoading"
-          [class.disabled]="!isFormValid() || isLoading">
-          {{ isLoading ? '처리중...' : '회원가입' }}
-        </button>
-      </form>
     </div>
   `,
   styles: [`
     .auth-container {
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 40px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      min-height: 100vh;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .content-wrapper {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-image-container {
+      width: 100%;
+      height: 320px;
+      background: linear-gradient(180deg, #5BBBB3 0%, #80CBC7 100%);
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     .logo-section {
       text-align: center;
-      margin-bottom: 30px;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .logo-image {
+      width: 80px;
+      height: auto;
+      margin-right: 8px;
     }
 
     .logo-text {
-      font-size: 2em;
-      color: #007bff;
-      margin: 0;
-      font-weight: 700;
+      color: white;
+      font-size: 18px;
+      font-weight: 500;
     }
 
     .logo-subtitle {
-      color: #6c757d;
-      margin-top: 5px;
-      font-size: 0.8em;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 11px;
+      margin: 0;
       letter-spacing: 0.5px;
     }
 
-    .tab-buttons {
-      display: flex;
-      margin-bottom: 30px;
-      border-bottom: 2px solid #f8f9fa;
-    }
-
-    .tab-buttons button {
-      flex: 1;
-      padding: 15px;
-      background: none;
-      border: none;
-      font-size: 16px;
-      color: #6c757d;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .tab-buttons button.active {
-      color: #007bff;
-      border-bottom: 2px solid #007bff;
-      margin-bottom: -2px;
-    }
-
-    .auth-form {
+    .login-section {
+      padding: 40px 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      align-items: center;
     }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .form-group label {
-      color: #495057;
-      font-size: 14px;
-    }
-
-    .input-with-icon {
+    .login-title {
+      text-align: center;
+      font-size: 17px;
+      color: #333;
+      margin: 0 0 24px 0;
+      font-weight: 500;
       position: relative;
-      display: flex;
-      align-items: center;
+      padding: 0 20px;
     }
 
-    .input-with-icon .material-icons {
+    .login-title::before,
+    .login-title::after {
+      content: '';
       position: absolute;
-      left: 12px;
-      color: #6c757d;
+      top: 50%;
+      width: 50px;
+      height: 1px;
+      background: #EEEEEE;
     }
 
-    .input-with-icon input {
+    .login-title::before {
+      left: -40px;
+    }
+
+    .login-title::after {
+      right: -40px;
+    }
+
+    .kakao-login-btn {
       width: 100%;
-      padding: 12px 12px 12px 40px;
-      border: 2px solid #f8f9fa;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    .input-with-icon input:focus {
-      border-color: #007bff;
-      outline: none;
-    }
-
-    .form-options {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .help-links {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .help-link {
-      color: #6c757d;
-      text-decoration: none;
-      font-size: 13px;
-      transition: color 0.3s ease;
-    }
-
-    .help-link:hover {
-      color: #007bff;
-    }
-
-    .divider {
-      color: #dee2e6;
-      font-size: 12px;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 12px;
+      padding: 16px;
+      background: #FFE500;
       border: none;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
+      border-radius: 12px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 500;
+      color: #333;
       cursor: pointer;
-      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      transition: transform 0.2s;
     }
 
-    .submit-btn:hover:not(.disabled) {
-      background-color: #0056b3;
+    .kakao-login-btn:active {
+      transform: scale(0.98);
     }
 
-    .submit-btn.disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .submit-btn:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .connection-status {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      padding: 8px;
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 4px;
-      font-size: 12px;
-      color: #666;
-      z-index: 1000;
-      opacity: 0.7;
-      transition: opacity 0.3s;
-    }
-    .connection-status:hover {
-      opacity: 1;
-    }
-
-    .material-icons {
-      font-family: 'Material Icons';
+    .chat-icon {
+      margin-right: 8px;
       font-size: 20px;
     }
 
-    .required {
-      color: #dc3545;
-      margin-left: 4px;
-    }
-
-    .error-message {
-      color: #dc3545;
+    .terms-text {
+      text-align: center;
       font-size: 12px;
-      margin-top: 4px;
+      color: #999;
+      line-height: 1.6;
+      margin: 0;
     }
 
-    button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
+    @media (max-width: 480px) {
+      .content-wrapper {
+        height: 100vh;
+      }
 
-    select {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      background-color: white;
-      font-size: 14px;
-    }
+      .top-image-container {
+        height: 280px;
+        border-bottom-left-radius: 30px;
+        border-bottom-right-radius: 30px;
+      }
 
-    select:focus {
-      outline: none;
-      border-color: #007bff;
-    }
+      .logo-text {
+        font-size: 16px;
+      }
 
-    .invalid-input {
-      border-color: #dc3545 !important;
-    }
+      .login-title {
+        font-size: 16px;
+      }
 
-    .invalid-input:focus {
-      border-color: #dc3545 !important;
-      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-    }
+      .kakao-login-btn {
+        font-size: 15px;
+        padding: 14px;
+      }
 
-    .position-select {
-      width: 100%;
-      padding: 12px 12px 12px 40px;
-      border: 2px solid #f8f9fa;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      appearance: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 1rem center;
-      background-size: 1em;
-    }
+      .login-title::before,
+      .login-title::after {
+        width: 30px;
+      }
 
-    .position-select:focus {
-      border-color: #007bff;
-      outline: none;
-    }
+      .login-title::before {
+        left: -20px;
+      }
 
-    .success-message {
-      color: #28a745;
-      font-size: 12px;
-      margin-top: 4px;
-      display: block;
-    }
-
-    .info-message {
-      color: #666;
-      font-size: 12px;
-      margin-top: 4px;
-      display: block;
+      .login-title::after {
+        right: -20px;
+      }
     }
   `]
 })
@@ -482,6 +258,9 @@ export class LoginComponent implements OnInit {
   constructor(private router: Router) {}
 
   async ngOnInit() {
+    // 카카오 SDK 초기화
+    this.initializeKakao();
+
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -495,6 +274,74 @@ export class LoginComponent implements OnInit {
     } catch (error) {
       this.connectionStatus = '❌ 연결 중 에러 발생';
       console.error('에러:', error);
+    }
+  }
+
+  private initializeKakao() {
+    // 카카오 JavaScript 키
+    const KAKAO_JS_KEY = 'a854fc1241de8719121800ead8887a6d';
+    
+    try {
+      Kakao.init(KAKAO_JS_KEY);
+      console.log('Kakao SDK initialized:', Kakao.isInitialized());
+    } catch (error) {
+      console.error('Kakao SDK initialization failed:', error);
+    }
+  }
+
+  async loginWithKakao() {
+    try {
+      // 카카오 로그인 요청
+      await Kakao.Auth.login({
+        scope: 'profile_nickname', // 닉네임만 요청
+        success: (authObj: any) => {
+          console.log('Kakao login success:', authObj);
+          
+          // 사용자 정보 가져오기
+          Kakao.API.request({
+            url: '/v2/user/me',
+            success: (res: any) => {
+              console.log('User info:', res);
+              const kakaoAccount = res.kakao_account;
+              
+              // 닉네임만 처리
+              const userInfo = {
+                id: res.id,
+                nickname: kakaoAccount?.profile?.nickname
+              };
+              
+              // 로그인 처리
+              this.handleKakaoLogin(userInfo);
+            },
+            fail: (error: any) => {
+              console.error('Failed to get user info:', error);
+              alert('사용자 정보를 가져오는데 실패했습니다.');
+            }
+          });
+        },
+        fail: (error: any) => {
+          console.error('Kakao login failed:', error);
+          alert('카카오 로그인에 실패했습니다.');
+        }
+      });
+    } catch (error) {
+      console.error('Login process failed:', error);
+      alert('로그인 처리 중 오류가 발생했습니다.');
+    }
+  }
+
+  private async handleKakaoLogin(userInfo: any) {
+    try {
+      console.log('카카오 로그인 성공! 닉네임:', userInfo.nickname);
+      
+      // TODO: 백엔드 API 호출하여 회원가입/로그인 처리
+      // const response = await this.authService.loginWithKakao(userInfo);
+      
+      // 임시로 메인 페이지로 이동
+      this.router.navigate(['/main']);
+    } catch (error) {
+      console.error('Failed to process login:', error);
+      alert('로그인 처리 중 오류가 발생했습니다.');
     }
   }
 
