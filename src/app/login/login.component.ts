@@ -8,7 +8,6 @@ interface RegisterForm {
   password: string;
   passwordConfirm: string;
   contact: string;
-  association_role: string;
   department: string;
   position: string;
 }
@@ -44,8 +43,17 @@ interface RegisterForm {
           <label>이메일</label>
           <div class="input-with-icon">
             <span class="material-icons">mail</span>
-            <input type="email" [(ngModel)]="loginEmail" name="email" placeholder="이메일을 입력하세요">
+            <input 
+              type="email" 
+              [(ngModel)]="loginEmail" 
+              name="email" 
+              (ngModelChange)="onEmailChange($event)"
+              [class.invalid-input]="!isEmailValid"
+              placeholder="이메일을 입력하세요">
           </div>
+          <small class="error-message" *ngIf="!isEmailValid && emailErrorMessage">
+            {{ emailErrorMessage }}
+          </small>
         </div>
         <div class="form-group">
           <label>비밀번호</label>
@@ -72,9 +80,14 @@ interface RegisterForm {
               type="email" 
               [(ngModel)]="registerForm.email" 
               name="email" 
+              (ngModelChange)="onEmailChange($event, true)"
+              [class.invalid-input]="!isEmailValid"
               placeholder="이메일을 입력하세요"
               required>
           </div>
+          <small class="error-message" *ngIf="!isEmailValid && emailErrorMessage">
+            {{ emailErrorMessage }}
+          </small>
         </div>
         <div class="form-group">
           <label>이름 <span class="required">*</span></label>
@@ -115,24 +128,15 @@ interface RegisterForm {
           <label>직책</label>
           <div class="input-with-icon">
             <span class="material-icons">badge</span>
-            <input 
-              type="text" 
+            <select 
               [(ngModel)]="registerForm.position" 
               name="position" 
-              placeholder="직책을 입력하세요">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>협회 역할 <span class="required">*</span></label>
-          <div class="input-with-icon">
-            <span class="material-icons">groups</span>
-            <select 
-              [(ngModel)]="registerForm.association_role" 
-              name="association_role" 
-              required>
-              <option value="">역할을 선택하세요</option>
-              <option value="member">일반회원</option>
-              <option value="admin">관리자</option>
+              class="position-select"
+              placeholder="직책을 선택하세요">
+              <option value="">직책을 선택하세요</option>
+              <option *ngFor="let pos of positionOptions" [value]="pos">
+                {{pos}}
+              </option>
             </select>
           </div>
         </div>
@@ -144,9 +148,17 @@ interface RegisterForm {
               type="password" 
               [(ngModel)]="registerForm.password" 
               name="password" 
+              (ngModelChange)="onPasswordChange()"
+              [class.invalid-input]="!passwordValidation.isValid && registerForm.password"
               placeholder="비밀번호를 입력하세요"
               required>
           </div>
+          <small class="error-message" *ngIf="!passwordValidation.isValid && registerForm.password">
+            {{ passwordValidation.message }}
+          </small>
+          <small class="info-message">
+            * 비밀번호는 6자 이상, 영문과 숫자를 포함해야 합니다.
+          </small>
         </div>
         <div class="form-group">
           <label>비밀번호 확인 <span class="required">*</span></label>
@@ -156,14 +168,23 @@ interface RegisterForm {
               type="password" 
               [(ngModel)]="registerForm.passwordConfirm" 
               name="passwordConfirm" 
+              (ngModelChange)="onPasswordChange()"
+              [class.invalid-input]="passwordMismatch"
               placeholder="비밀번호를 다시 입력하세요"
               required>
           </div>
           <small class="error-message" *ngIf="passwordMismatch">
             비밀번호가 일치하지 않습니다.
           </small>
+          <small class="success-message" *ngIf="registerForm.password && registerForm.passwordConfirm && !passwordMismatch">
+            비밀번호가 일치합니다! ✓
+          </small>
         </div>
-        <button type="submit" class="submit-btn" [disabled]="isLoading">
+        <button 
+          type="submit" 
+          class="submit-btn" 
+          [disabled]="!isFormValid() || isLoading"
+          [class.disabled]="!isFormValid() || isLoading">
           {{ isLoading ? '처리중...' : '회원가입' }}
         </button>
       </form>
@@ -297,19 +318,32 @@ interface RegisterForm {
     }
 
     .submit-btn {
-      background: #007bff;
-      color: white;
+      width: 100%;
+      padding: 12px;
       border: none;
-      padding: 14px;
       border-radius: 8px;
+      background-color: #007bff;
+      color: white;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .submit-btn:hover {
-      background: #0056b3;
-      transform: translateY(-2px);
+    .submit-btn:hover:not(.disabled) {
+      background-color: #0056b3;
+    }
+
+    .submit-btn.disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .submit-btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      opacity: 0.7;
     }
 
     .connection-status {
@@ -363,6 +397,48 @@ interface RegisterForm {
       outline: none;
       border-color: #007bff;
     }
+
+    .invalid-input {
+      border-color: #dc3545 !important;
+    }
+
+    .invalid-input:focus {
+      border-color: #dc3545 !important;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .position-select {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      border: 2px solid #f8f9fa;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1em;
+    }
+
+    .position-select:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    .success-message {
+      color: #28a745;
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .info-message {
+      color: #666;
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
   `]
 })
 export class LoginComponent implements OnInit {
@@ -372,6 +448,8 @@ export class LoginComponent implements OnInit {
   loginPassword: string = '';
   isLoading: boolean = false;
   passwordMismatch: boolean = false;
+  isEmailValid: boolean = true;
+  emailErrorMessage: string = '';
 
   registerForm: RegisterForm = {
     email: '',
@@ -379,9 +457,26 @@ export class LoginComponent implements OnInit {
     password: '',
     passwordConfirm: '',
     contact: '',
-    association_role: '',
     department: '',
     position: ''
+  };
+
+  // 직책 목록 추가
+  positionOptions: string[] = [
+    '사원',
+    '주임',
+    '대리',
+    '과장',
+    '차장',
+    '팀장',
+    '부장',
+    '이사',
+  ];
+
+  // 비밀번호 유효성 검사 결과
+  passwordValidation = {
+    isValid: false,
+    message: ''
   };
 
   constructor(private router: Router) {}
@@ -424,10 +519,16 @@ export class LoginComponent implements OnInit {
   }
 
   async handleRegister() {
+    // 이메일 유효성 한번 더 검사
+    if (!this.validateEmail(this.registerForm.email)) {
+      alert('올바른 이메일 형식을 입력해주세요.');
+      return;
+    }
+
     // 필수 필드 검증
     if (!this.registerForm.email || !this.registerForm.name || 
         !this.registerForm.password || !this.registerForm.passwordConfirm ||
-        !this.registerForm.contact || !this.registerForm.association_role) {
+        !this.registerForm.contact) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
@@ -459,10 +560,10 @@ export class LoginComponent implements OnInit {
             email: this.registerForm.email,
             name: this.registerForm.name,
             contact: this.registerForm.contact,
-            association_role: this.registerForm.association_role,
             department: this.registerForm.department || null,  // 선택 입력
             position: this.registerForm.position || null,      // 선택 입력
-            auth_status: 'pending'  // 관리자 승인 대기 상태
+            auth_status: 'pending',  // 관리자 승인 대기 상태
+            association_role: 'member'  // 기본값으로 일반 회원 설정
           }
         ]);
 
@@ -487,9 +588,92 @@ export class LoginComponent implements OnInit {
       password: '',
       passwordConfirm: '',
       contact: '',
-      association_role: '',
       department: '',
       position: ''
     };
+  }
+
+  // 이메일 유효성 검사 함수 추가
+  validateEmail(email: string): boolean {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
+
+  // 이메일 입력 변경 시 유효성 검사
+  onEmailChange(email: string, isRegister: boolean = false) {
+    if (!email) {
+      this.isEmailValid = true;
+      this.emailErrorMessage = '';
+      return;
+    }
+
+    this.isEmailValid = this.validateEmail(email);
+    if (!this.isEmailValid) {
+      this.emailErrorMessage = '올바른 이메일 형식이 아닙니다. (예: example@email.com)';
+    } else {
+      this.emailErrorMessage = '';
+    }
+  }
+
+  // 비밀번호 유효성 검사 함수
+  validatePassword(password: string): boolean {
+    if (!password) {
+      this.passwordValidation = {
+        isValid: false,
+        message: '비밀번호를 입력해주세요.'
+      };
+      return false;
+    }
+    
+    if (password.length < 6) {
+      this.passwordValidation = {
+        isValid: false,
+        message: '비밀번호는 최소 6자 이상이어야 합니다.'
+      };
+      return false;
+    }
+
+    // 영문, 숫자 포함 체크
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    
+    if (!hasLetter || !hasNumber) {
+      this.passwordValidation = {
+        isValid: false,
+        message: '비밀번호는 영문과 숫자를 모두 포함해야 합니다.'
+      };
+      return false;
+    }
+
+    this.passwordValidation = {
+      isValid: true,
+      message: '사용 가능한 비밀번호입니다.'
+    };
+    return true;
+  }
+
+  // 비밀번호 입력 변경 시 검사
+  onPasswordChange() {
+    this.validatePassword(this.registerForm.password);
+    
+    if (!this.registerForm.password || !this.registerForm.passwordConfirm) {
+      this.passwordMismatch = false;
+      return;
+    }
+    this.passwordMismatch = this.registerForm.password !== this.registerForm.passwordConfirm;
+  }
+
+  // Form 유효성 검사 수정
+  isFormValid(): boolean {
+    return (
+      !!this.registerForm.email &&
+      this.isEmailValid &&
+      !!this.registerForm.name &&
+      !!this.registerForm.contact &&
+      !!this.registerForm.password &&
+      !!this.registerForm.passwordConfirm &&
+      this.passwordValidation.isValid &&
+      !this.passwordMismatch
+    );
   }
 } 
