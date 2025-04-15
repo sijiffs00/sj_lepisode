@@ -7,10 +7,10 @@ interface RegisterForm {
   name: string;
   password: string;
   passwordConfirm: string;
+  contact: string;
+  association_role: string;
   department: string;
   position: string;
-  contact: string;
-  company_name: string;
 }
 
 @Component({
@@ -89,26 +89,26 @@ interface RegisterForm {
           </div>
         </div>
         <div class="form-group">
-          <label>소속회사명 <span class="required">*</span></label>
+          <label>연락처 <span class="required">*</span></label>
           <div class="input-with-icon">
-            <span class="material-icons">business</span>
+            <span class="material-icons">phone</span>
             <input 
-              type="text" 
-              [(ngModel)]="registerForm.company_name" 
-              name="company_name" 
-              placeholder="소속회사명을 입력하세요"
+              type="tel" 
+              [(ngModel)]="registerForm.contact" 
+              name="contact" 
+              placeholder="연락처를 입력하세요"
               required>
           </div>
         </div>
         <div class="form-group">
           <label>부서</label>
           <div class="input-with-icon">
-            <span class="material-icons">groups</span>
+            <span class="material-icons">business</span>
             <input 
               type="text" 
               [(ngModel)]="registerForm.department" 
               name="department" 
-              placeholder="부서를 입력하세요">
+              placeholder="소속 부서를 입력하세요">
           </div>
         </div>
         <div class="form-group">
@@ -123,15 +123,17 @@ interface RegisterForm {
           </div>
         </div>
         <div class="form-group">
-          <label>연락처 <span class="required">*</span></label>
+          <label>협회 역할 <span class="required">*</span></label>
           <div class="input-with-icon">
-            <span class="material-icons">phone</span>
-            <input 
-              type="tel" 
-              [(ngModel)]="registerForm.contact" 
-              name="contact" 
-              placeholder="연락처를 입력하세요"
+            <span class="material-icons">groups</span>
+            <select 
+              [(ngModel)]="registerForm.association_role" 
+              name="association_role" 
               required>
+              <option value="">역할을 선택하세요</option>
+              <option value="member">일반회원</option>
+              <option value="admin">관리자</option>
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -347,6 +349,20 @@ interface RegisterForm {
       background-color: #cccccc;
       cursor: not-allowed;
     }
+
+    select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #007bff;
+    }
   `]
 })
 export class LoginComponent implements OnInit {
@@ -362,10 +378,10 @@ export class LoginComponent implements OnInit {
     name: '',
     password: '',
     passwordConfirm: '',
-    department: '',
-    position: '',
     contact: '',
-    company_name: ''
+    association_role: '',
+    department: '',
+    position: ''
   };
 
   constructor(private router: Router) {}
@@ -411,7 +427,7 @@ export class LoginComponent implements OnInit {
     // 필수 필드 검증
     if (!this.registerForm.email || !this.registerForm.name || 
         !this.registerForm.password || !this.registerForm.passwordConfirm ||
-        !this.registerForm.contact || !this.registerForm.company_name) {
+        !this.registerForm.contact || !this.registerForm.association_role) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
@@ -442,12 +458,10 @@ export class LoginComponent implements OnInit {
             id: authData.user?.id,  // Auth에서 생성된 UUID
             email: this.registerForm.email,
             name: this.registerForm.name,
-            department: this.registerForm.department,
-            position: this.registerForm.position,
             contact: this.registerForm.contact,
-            company: {
-              name: this.registerForm.company_name
-            },
+            association_role: this.registerForm.association_role,
+            department: this.registerForm.department || null,  // 선택 입력
+            position: this.registerForm.position || null,      // 선택 입력
             auth_status: 'pending'  // 관리자 승인 대기 상태
           }
         ]);
@@ -472,10 +486,10 @@ export class LoginComponent implements OnInit {
       name: '',
       password: '',
       passwordConfirm: '',
-      department: '',
-      position: '',
       contact: '',
-      company_name: ''
+      association_role: '',
+      department: '',
+      position: ''
     };
   }
 } 
