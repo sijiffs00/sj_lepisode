@@ -343,43 +343,27 @@ export class LoginComponent implements OnInit {
 
   private async handleKakaoLogin(userInfo: Partial<UserInfo>) {
     try {
-      // Supabase에서 사용자 조회
-      const { data: existingUser, error: selectError } = await supabase
+      // 기존 회원인지 확인
+      const { data: existingUser, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('id', userInfo.id)
         .single();
 
-      if (selectError && selectError.code !== 'PGRST116') {
-        console.error('사용자 조회 중 에러:', selectError);
-        alert('회원 정보 조회 중 오류가 발생했습니다.');
-        return;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
       }
 
       if (existingUser) {
-        // 기존 회원: 마지막 로그인 시간 업데이트
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({ joined_at: new Date().toISOString() })
-          .eq('id', userInfo.id);
-
-        if (updateError) {
-          console.error('로그인 시간 업데이트 실패:', updateError);
-        }
-
-        // 승인 상태 확인
-        if (existingUser.auth_status === 'approved') {
-          this.router.navigate(['/main']);
-        } else {
-          alert('관리자 승인 대기 중입니다.');
-          this.router.navigate(['/pending']);
-        }
-      } else {
-        // 신규 회원: 회원가입 페이지로 이동
-        this.router.navigate(['/register'], { 
-          state: { kakaoInfo: userInfo }
-        });
+        // 기존 회원이면 바로 메인 페이지로 이동
+        this.router.navigate(['/main']);
+        return;
       }
+
+      // 신규 회원이면 회원가입 페이지로 이동
+      this.router.navigate(['/register'], {
+        state: { kakaoInfo: userInfo }
+      });
     } catch (error) {
       console.error('로그인 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');
