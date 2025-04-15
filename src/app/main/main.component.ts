@@ -62,45 +62,47 @@ interface UserProfile {
             <section class="profile-section">
               <h3>내 프로필</h3>
               <div class="profile-card" *ngIf="userProfile">
-                <div class="name-row">
-                  <span class="name">{{ userProfile.name }}</span>
-                  <span class="position">{{ userProfile.position }}</span>
-                  <button class="status-badge">{{ userProfile.auth_status }}</button>
+                <div class="profile-header">
+                  <span class="name" [class.empty]="!userProfile.name">{{ userProfile.name || '미입력' }}</span>
+                  <span class="position" [class.empty]="!userProfile.position">{{ userProfile.position || '미입력' }}</span>
+                  <button class="auth-badge" [class.empty]="!userProfile.auth_status">{{ userProfile.auth_status || '미입력' }}</button>
                 </div>
-                <div class="info-list">
-                  <div class="info-item">
-                    <span class="check-icon">✓</span>
+                <div class="profile-info">
+                  <div class="info-row">
+                    <span class="check">✓</span>
                     <span class="label">소속</span>
-                    <span class="value">{{ userProfile.company_appl }}</span>
+                    <span class="value" [class.empty]="!userProfile.company_appl">{{ userProfile.company_appl || '미입력' }}</span>
                   </div>
-                  <div class="info-item">
-                    <span class="check-icon">✓</span>
+                  <div class="info-row">
+                    <span class="check">✓</span>
                     <span class="label">직위/직책</span>
-                    <span class="value">{{ userProfile.position }}</span>
+                    <span class="value" [class.empty]="!userProfile.position">{{ userProfile.position || '미입력' }}</span>
                   </div>
-                  <div class="info-item">
-                    <span class="check-icon">✓</span>
+                  <div class="info-row">
+                    <span class="check">✓</span>
                     <span class="label">연락처</span>
-                    <span class="value">{{ userProfile.contact }}</span>
+                    <span class="value" [class.empty]="!userProfile.contact">{{ userProfile.contact || '미입력' }}</span>
                   </div>
-                  <div class="info-item">
-                    <span class="check-icon">✓</span>
+                  <div class="info-row">
+                    <span class="check">✓</span>
                     <span class="label">이메일</span>
-                    <span class="value">{{ userProfile.email }}</span>
+                    <span class="value" [class.empty]="!userProfile.email">{{ userProfile.email || '미입력' }}</span>
                   </div>
+                </div>
+                <div class="profile-actions">
+                  <button class="profile-button">회원 정보 수정</button>
+                  <button class="profile-button">회원 탈퇴</button>
                 </div>
               </div>
               <div *ngIf="!userProfile" class="loading">
                 프로필 정보를 불러오는 중...
               </div>
-              <button class="action-button">회원 정보 수정</button>
-              <button class="action-button">회원 탈퇴</button>
             </section>
 
             <!-- 내 기업 섹션 -->
             <section class="company-section">
               <h3>내 기업</h3>
-              <div class="company-card">
+              <div *ngIf="userProfile?.company_appl; else noCompany" class="company-card">
                 <div class="company-logo">
                   <img src="assets/corona-logo.png" alt="회사 로고">
                 </div>
@@ -112,9 +114,20 @@ interface UserProfile {
                   <button class="status-badge">승인 완료</button>
                 </div>
               </div>
-              <button class="action-button">구성원 목록</button>
-              <button class="action-button">기업 정보 수정</button>
-              <button class="action-button">기업 나가기</button>
+              <ng-template #noCompany>
+                <div class="no-company">
+                  <div class="no-company-content">
+                    <img src="assets/company_icon.png" alt="회사 아이콘" class="company-icon">
+                    <p class="message">기업을 등록해주세요.</p>
+                    <button class="register-button">기업등록 <span class="arrow">></span></button>
+                  </div>
+                </div>
+              </ng-template>
+              <div *ngIf="userProfile?.company_appl" class="company-actions">
+                <button class="action-button">구성원 목록</button>
+                <button class="action-button">기업 정보 수정</button>
+                <button class="action-button">기업 나가기</button>
+              </div>
             </section>
           </div>
         </div>
@@ -230,80 +243,16 @@ interface UserProfile {
       font-weight: 500;
     }
 
-    .profile-card {
-      padding: 20px 16px;
-    }
-
-    .name-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #EEEEEE;
-    }
-
-    .name {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .position {
-      color: #0891B2;
-      font-size: 14px;
-    }
-
-    .status-badge {
-      margin-left: auto;
-      background: #E8F5FF;
-      color: #0891B2;
-      border: none;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-
-    .info-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .check-icon {
-      color: #0891B2;
-    }
-
-    .label {
-      color: #666;
-      width: 80px;
-    }
-
-    .value {
-      color: #333;
-      flex: 1;
-    }
-
     .company-card {
       padding: 20px 16px;
+      display: flex;
+      gap: 16px;
     }
 
     .company-logo {
-      width: 100%;
-      height: 120px;
-      background: #000;
+      width: 80px;
+      height: 80px;
       border-radius: 8px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
     }
 
@@ -313,33 +262,138 @@ interface UserProfile {
       object-fit: cover;
     }
 
+    .company-info {
+      flex: 1;
+    }
+
     .company-info h4 {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 600;
       color: #333;
       margin: 0 0 8px 0;
     }
 
     .company-info p {
+      margin: 4px 0;
       color: #666;
       font-size: 14px;
-      margin: 4px 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #E0F2FE;
+      color: #0891B2;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      margin-top: 8px;
     }
 
     .action-button {
+      display: block;
       width: calc(100% - 32px);
       margin: 8px 16px;
       padding: 12px;
-      background: white;
-      border: 1px solid #DDD;
+      background: #F1F5F9;
+      border: none;
       border-radius: 8px;
-      color: #333;
+      color: #334155;
       font-size: 14px;
       font-weight: 500;
+      text-align: center;
+      cursor: pointer;
     }
 
     .action-button:last-child {
       margin-bottom: 16px;
+    }
+
+    /* 프로필 카드 스타일 */
+    .profile-card {
+      padding: 20px;
+      background: white;
+    }
+
+    .empty {
+      color: #94A3B8 !important;
+      font-style: italic;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .position {
+      font-size: 16px;
+      color: #0891B2;
+    }
+
+    .auth-badge {
+      margin-left: auto;
+      padding: 4px 12px;
+      background: #E0F2FE;
+      color: #0891B2;
+      border: none;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .profile-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check {
+      color: #0891B2;
+      font-size: 16px;
+    }
+
+    .label {
+      width: 80px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .value {
+      color: #333;
+      font-size: 14px;
+    }
+
+    .profile-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .profile-button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #F1F5F9;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
     }
 
     /* 하단 네비게이션 바 스타일 */
@@ -347,60 +401,84 @@ interface UserProfile {
       position: fixed;
       bottom: 0;
       left: 0;
-      width: 100%;
-      height: 64px;
+      right: 0;
       background: white;
       display: flex;
       justify-content: space-around;
-      align-items: center;
-      border-top: 1px solid #EEEEEE;
-      padding: 0 16px;
+      padding: 8px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .nav-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       gap: 4px;
       background: none;
       border: none;
       padding: 8px;
       cursor: pointer;
-      width: 20%;
     }
 
     .nav-icon {
-      font-size: 20px;
-      color: #999;
+      font-size: 24px;
     }
 
     .nav-text {
-      font-size: 11px;
-      font-weight: 500;
-      color: #999;
-    }
-
-    .nav-item.active .nav-icon {
-      color: #5BBBB3;
+      font-size: 12px;
+      color: #94A3B8;
     }
 
     .nav-text.active {
-      color: #5BBBB3;
+      color: #0891B2;
     }
 
-    /* 반응형 스타일 */
-    @media (min-width: 768px) {
-      .content {
-        max-width: 768px;
-        margin: 0 auto;
-      }
+    /* 기업 없을 때 스타일 */
+    .no-company {
+      padding: 40px 20px;
+      text-align: center;
+    }
 
-      .bottom-nav {
-        max-width: 768px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
+    .no-company-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .company-icon {
+      width: 64px;
+      height: 64px;
+      opacity: 0.7;
+    }
+
+    .message {
+      color: #64748B;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .register-button {
+      background: #0891B2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .arrow {
+      font-size: 18px;
+      margin-top: -2px;
+    }
+
+    .company-actions {
+      margin-top: 16px;
     }
   `]
 })
@@ -416,19 +494,9 @@ export class MainComponent implements OnInit {
 
   async loadUserProfile() {
     try {
-      // 현재 로그인한 유저 정보 가져오기
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        this.router.navigate(['/login']);
-        return;
-      }
-
-      // users 테이블에서 현재 유저의 프로필 정보 가져오기
       const { data: userProfile, error } = await supabase
         .from('users')
         .select('*')
-        .eq('email', user.email)
         .single();
 
       if (error) {

@@ -51,13 +51,12 @@ interface RegisterForm {
 
           <!-- 소속 입력 -->
           <div class="form-group">
-            <label>소속<span class="required">•</span></label>
+            <label>소속</label>
             <input 
               type="text" 
               [(ngModel)]="form.department" 
               name="department"
-              placeholder="레피소드"
-              required>
+              placeholder="레피소드">
           </div>
 
           <!-- 직위/직책 입력 -->
@@ -454,7 +453,6 @@ export class RegisterComponent implements OnInit {
     return (
       !!this.form.name &&
       !!this.form.contact &&
-      !!this.form.department &&
       this.termsAgreed &&
       this.marketingAgreed
     );
