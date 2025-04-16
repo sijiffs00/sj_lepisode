@@ -10,6 +10,7 @@ import { MainComponent } from './main/main.component';
 import { SupabaseTestComponent } from './supabase-test/supabase-test.component';
 import { RegisterComponent } from './register/register.component';
 import { PendingComponent } from './pending/pending.component';
+import { AdminModule } from './admin/admin.module';
 
 @NgModule({
   declarations: [
@@ -22,10 +23,11 @@ import { PendingComponent } from './pending/pending.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    AppRoutingModule,
+    AdminModule
   ],
   providers: [],
   bootstrap: [AppComponent]

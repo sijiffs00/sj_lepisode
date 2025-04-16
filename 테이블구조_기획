@@ -4,7 +4,7 @@
 - joined_at: timestamp (default: now())
 - registered_at: timestamp (default: now())
 - auth_status: text
-- company_approved: text
+- company_approval: text
 - department: text
 - position: text
 - contact: text

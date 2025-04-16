@@ -11,6 +11,7 @@ const routes: Routes = [
   { path: 'main', component: MainComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'pending', component: PendingComponent },
+  { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) }
 ];
 
 @NgModule({
