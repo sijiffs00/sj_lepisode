@@ -1,0 +1,58 @@
+1. users
+- id: int8 (PK)
+- name: text
+- joined_at: timestamp (default: now())
+- registered_at: timestamp (default: now())
+- auth_status: text
+- company_approved: text
+- department: text
+- position: text
+- contact: text
+- email: text
+- association_role: text
+- org_chart_id: text
+- company_id: uuid
+- company: json
+
+2. companies
+- id: uuid (PK, default: gen_random_uuid())
+- ceo_name: text
+- logo_url: text
+- name: text
+- industry: text
+- address: text
+- homepage_url: text
+- approval_status: text
+- created_at: timestamp
+- members: jsonb
+
+3. admins
+- id: uuid (PK, default: gen_random_uuid())
+- email: text (unique)
+- password_hash: text
+- name: text
+- role: text (super_admin, admin)
+- created_at: timestamp (default: now())
+- last_login_at: timestamp
+
+4. approval_requests
+- id: uuid (PK, default: gen_random_uuid())
+- type: text (company, member)
+- status: text (pending, approved, rejected)
+- requester_id: int8 (FK -> users.id)
+- company_id: uuid (FK -> companies.id, nullable)
+- request_data: jsonb
+- created_at: timestamp (default: now())
+- processed_at: timestamp
+- processed_by: uuid (FK -> admins.id)
+- rejection_reason: text
+
+5. admin_activity_logs
+- id: uuid (PK, default: gen_random_uuid())
+- admin_id: uuid (FK -> admins.id)
+- action: text (login, create, update, delete, approve, reject)
+- target_type: text (company, member, approval)
+- target_id: text
+- details: jsonb
+- created_at: timestamp (default: now())
+- ip_address: text
