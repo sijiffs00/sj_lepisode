@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../supabase';
+import { HostListener } from '@angular/core';
 
 interface RegisterForm {
   name: string;
@@ -8,6 +9,11 @@ interface RegisterForm {
   department: string;
   position: string;
   email: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
 }
 
 @Component({
@@ -29,34 +35,32 @@ interface RegisterForm {
         <form (ngSubmit)="handleRegister()" class="register-form">
           <!-- 이름 입력 -->
           <div class="form-group">
-            <label>이름<span class="required">•</span></label>
+            <label>이름 <span class="required">*</span></label>
             <input 
               type="text" 
               [(ngModel)]="form.name" 
               name="name"
-              placeholder="권혁빈"
-              required>
-          </div>
-
-          <!-- 연락처 입력 -->
-          <div class="form-group">
-            <label>연락처<span class="required">•</span></label>
-            <input 
-              type="tel" 
-              [(ngModel)]="form.contact" 
-              name="contact"
-              placeholder="010-1234-5678"
+              placeholder="권현민"
               required>
           </div>
 
           <!-- 소속 입력 -->
           <div class="form-group">
             <label>소속</label>
-            <input 
-              type="text" 
-              [(ngModel)]="form.department" 
-              name="department"
-              placeholder="레피소드">
+            <div class="custom-dropdown">
+              <button type="button" class="dropdown-button" (click)="toggleDropdown()">
+                {{ form.department || '소속을 선택해 주세요' }}
+                <span class="arrow">▼</span>
+              </button>
+              <div class="dropdown-menu" [class.show]="isDropdownOpen">
+                <div 
+                  class="dropdown-item" 
+                  *ngFor="let company of companies" 
+                  (click)="onSelectCompany(company.name)">
+                  {{ company.name }}
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 직위/직책 입력 -->
@@ -69,28 +73,32 @@ interface RegisterForm {
               placeholder="직위/직책을 입력해 주세요.">
           </div>
 
+          <!-- 연락처 입력 -->
+          <div class="form-group">
+            <label>연락처 <span class="required">*</span></label>
+            <input 
+              type="tel" 
+              [(ngModel)]="form.contact" 
+              name="contact"
+              placeholder="연락처를 입력해 주세요."
+              required>
+          </div>
+
           <!-- 이메일 입력 -->
           <div class="form-group">
-            <label>이메일</label>
+            <label>이메일 <span class="required">*</span></label>
             <input 
               type="email" 
               [(ngModel)]="form.email" 
               name="email"
-              placeholder="이메일을 입력해 주세요.">
+              placeholder="이메일을 입력해 주세요."
+              required>
           </div>
 
           <!-- 약관 동의 -->
           <div class="terms-section">
-            <div class="terms-item">
-              <input type="checkbox" [(ngModel)]="termsAgreed" name="terms" id="terms">
-              <label for="terms">이용약관/개인정보처리방침 동의 (필수)</label>
-              <button type="button" class="terms-link" (click)="showTerms()">내용 확인 ›</button>
-            </div>
-            <div class="terms-item">
-              <input type="checkbox" [(ngModel)]="marketingAgreed" name="marketing" id="marketing">
-              <label for="marketing">이메일/연락처 노출 동의 (필수)</label>
-              <button type="button" class="terms-link" (click)="showTerms()">내용 확인 ›</button>
-            </div>
+            <h3>이용약관/개인정보처리방침 동의 등의</h3>
+            <h3>연락처, 이메일 노출 동의</h3>
           </div>
 
           <!-- 버튼 영역 -->
@@ -161,6 +169,7 @@ interface RegisterForm {
       width: 100%;
       min-height: 100vh;
       background: #FFFFFF;
+      padding: 20px;
     }
 
     .header {
@@ -196,7 +205,9 @@ interface RegisterForm {
     }
 
     .content {
-      padding: 24px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px 0;
     }
 
     .subtitle {
@@ -211,26 +222,27 @@ interface RegisterForm {
 
     .form-group label {
       display: block;
-      font-size: 14px;
+      font-size: 16px;
       color: #333;
       margin-bottom: 8px;
+      font-weight: 500;
     }
 
     .required {
       color: #5BBBB3;
-      margin-left: 4px;
+      margin-left: 2px;
     }
 
     input[type="text"],
     input[type="tel"],
     input[type="email"] {
       width: 100%;
-      padding: 16px;
-      border: 1px solid #EEEEEE;
+      padding: 15px;
+      border: none;
       border-radius: 8px;
       font-size: 16px;
       color: #333;
-      background: #F8F9FA;
+      background: #F1F1F1;
     }
 
     input::placeholder {
@@ -238,30 +250,15 @@ interface RegisterForm {
     }
 
     .terms-section {
-      margin: 32px 0;
+      margin: 40px 0;
+      text-align: center;
     }
 
-    .terms-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 16px;
-      gap: 8px;
-    }
-
-    .terms-item label {
-      font-size: 14px;
-      color: #333;
-      flex: 1;
-    }
-
-    .terms-link {
-      background: none;
-      border: none;
-      color: #5BBBB3;
-      text-decoration: none;
-      font-size: 14px;
-      cursor: pointer;
-      padding: 0;
+    .terms-section h3 {
+      margin: 8px 0;
+      font-size: 16px;
+      color: #666;
+      font-weight: normal;
     }
 
     .button-group {
@@ -274,17 +271,17 @@ interface RegisterForm {
     .confirm-btn {
       flex: 1;
       padding: 16px;
+      border: none;
       border-radius: 8px;
       font-size: 16px;
-      font-weight: 500;
       cursor: pointer;
-      border: none;
+      font-weight: 500;
     }
 
     .cancel-btn {
-      background: white;
-      border: 1px solid #EEEEEE;
-      color: #666;
+      background: #FFFFFF;
+      color: #333;
+      border: 1px solid #DDD;
     }
 
     .confirm-btn {
@@ -418,6 +415,59 @@ interface RegisterForm {
         margin: 0 auto;
       }
     }
+
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown-button {
+      width: 100%;
+      padding: 15px;
+      background: #F1F1F1;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      color: #333;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .arrow {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .dropdown-menu.show {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 12px 15px;
+      cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+      background: #F8F9FA;
+    }
   `]
 })
 export class RegisterComponent implements OnInit {
@@ -429,12 +479,14 @@ export class RegisterComponent implements OnInit {
     email: ''
   };
 
+  companies: Company[] = [];
   isLoading = false;
   kakaoInfo: any;
   termsAgreed = false;
   marketingAgreed = false;
   showTermsModal = false;
   activeTab: 'privacy' | 'terms' = 'privacy';
+  isDropdownOpen = false;
 
   constructor(private router: Router) {
     const navigation = this.router.getCurrentNavigation();
@@ -443,9 +495,46 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
-    if (!this.kakaoInfo) {
-      this.router.navigate(['/login']);
+  async ngOnInit() {
+    try {
+      console.log('회사 목록 가져오기 시작');
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      
+      this.companies = data || [];
+      console.log('가져온 회사 목록:', this.companies);
+
+      if (!this.kakaoInfo) {
+        console.log('kakaoInfo 없음, 로그인 페이지로 이동');
+        this.router.navigate(['/login']);
+      }
+    } catch (error) {
+      console.error('회사 목록 조회 에러:', error);
+      alert('회사 목록을 불러오는데 실패했습니다.');
+    }
+  }
+
+  toggleDropdown() {
+    console.log('토글 전:', this.isDropdownOpen);
+    this.isDropdownOpen = !this.isDropdownOpen;
+    console.log('토글 후:', this.isDropdownOpen);
+  }
+
+  onSelectCompany(companyName: string) {
+    console.log('선택된 회사:', companyName);
+    this.form.department = companyName;
+    this.isDropdownOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: Event) {
+    const dropdown = (event.target as HTMLElement).closest('.custom-dropdown');
+    if (!dropdown) {
+      this.isDropdownOpen = false;
     }
   }
 
@@ -453,8 +542,7 @@ export class RegisterComponent implements OnInit {
     return (
       !!this.form.name &&
       !!this.form.contact &&
-      this.termsAgreed &&
-      this.marketingAgreed
+      !!this.form.email
     );
   }
 

@@ -128,6 +128,8 @@ interface UserProfile {
                 <button class="action-button">기업 정보 수정</button>
                 <button class="action-button">기업 나가기</button>
               </div>
+              <button class="logout-button" (click)="logout()">로그아웃</button>
+              <div class="withdraw-text">>회원탈퇴</div>
             </section>
           </div>
         </div>
@@ -480,6 +482,34 @@ interface UserProfile {
     .company-actions {
       margin-top: 16px;
     }
+
+    .logout-button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      background: none;
+      color: #64748B;
+      border: 1px solid #64748B;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .logout-button:hover {
+      color: #475569;
+      border-color: #475569;
+    }
+
+    .withdraw-text {
+      color: #64748B;
+      text-align: left;
+      padding: 8px 16px;
+      margin-top: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
   `]
 })
 export class MainComponent implements OnInit {
@@ -507,6 +537,20 @@ export class MainComponent implements OnInit {
       this.userProfile = userProfile;
     } catch (error) {
       console.error('Error in loadUserProfile:', error);
+    }
+  }
+
+  async logout() {
+    try {
+      // Supabase 로그아웃 실행
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // 로그인 페이지로 이동
+      this.router.navigate(['/login']);
+    } catch (error) {
+      console.error('로그아웃 중 오류 발생:', error);
+      alert('로그아웃 중 문제가 발생했습니다. 다시 시도해주세요.');
     }
   }
 } 
