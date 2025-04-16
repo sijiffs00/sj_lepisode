@@ -3,12 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AdminLoginComponent } from './login/admin-login.component';
+import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
 
 const routes: Routes = [
   { 
     path: 'admin', 
     children: [
       { path: 'login', component: AdminLoginComponent },
+      { path: 'dashboard', component: AdminDashboardComponent },
       { path: '', redirectTo: 'login', pathMatch: 'full' }
     ]
   }
@@ -16,7 +18,8 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AdminLoginComponent
+    AdminLoginComponent,
+    AdminDashboardComponent
   ],
   imports: [
     CommonModule,
