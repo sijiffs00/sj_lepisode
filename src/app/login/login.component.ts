@@ -202,7 +202,7 @@ export class LoginComponent implements OnInit {
 
   private initializeKakao() {
     if (!Kakao.isInitialized()) {
-      Kakao.init('your-kakao-javascript-key');
+      Kakao.init('a854fc1241de8719121800ead8887a6d');
     }
   }
 
@@ -239,6 +239,12 @@ export class LoginComponent implements OnInit {
 
   private async handleKakaoLogin(userInfo: Partial<UserInfo>) {
     try {
+      console.log('카카오에서 받은 사용자 정보:', {
+        id: userInfo.id,
+        name: userInfo.name,
+        email: userInfo.email
+      });
+
       // Supabase에서 사용자 확인
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
@@ -251,21 +257,12 @@ export class LoginComponent implements OnInit {
       }
 
       if (!existingUser) {
-        // 새 사용자 등록
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([{
-            id: userInfo.id,
-            name: userInfo.name,
-            email: userInfo.email,
-            joined_at: new Date().toISOString()
-          }]);
-
-        if (insertError) throw insertError;
+        console.log('새로운 사용자! /register로 이동합니다. userInfo.id:', userInfo.id);
+        this.router.navigate(['/register']);
+      } else {
+        console.log('기존 사용자! /main으로 이동합니다. userInfo.id:', userInfo.id);
+        this.router.navigate(['/main']);
       }
-
-      // 로그인 성공 후 메인 페이지로 이동
-      this.router.navigate(['/']);
     } catch (error) {
       console.error('사용자 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');
