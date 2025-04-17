@@ -435,6 +435,7 @@ export class LoginComponent implements OnInit {
             department: this.registerForm.department || null,  // 선택 입력
             position: this.registerForm.position || null,      // 선택 입력
             auth_status: 'pending',  // 관리자 승인 대기 상태
+            company_approval: 'PENDING_USER',  // 회사 승인 대기 상태
             association_role: 'member'  // 기본값으로 일반 회원 설정
           }
         ]);
