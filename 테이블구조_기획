@@ -1,4 +1,17 @@
-1. users
+
+1. companies
+- id: uuid (PK, default: gen_random_uuid())
+- ceo_name: text
+- logo_url: text
+- name: text
+- industry: text
+- address: text
+- homepage_url: text
+- approval_status: text
+- created_at: timestamp
+- members: jsonb
+
+2. users
 - id: int8 (PK)
 - name: text
 - joined_at: timestamp (default: now())
@@ -11,17 +24,20 @@
 - email: text
 - association_role: text
 - org_chart_id: text
-- company_id: uuid
+- company_id: uuid (FK -> companies.id) [ON DELETE SET NULL]
 - company: json
 
-2. companies
+3. admins
 - id: uuid (PK, default: gen_random_uuid())
-- ceo_name: text
-- logo_url: text
-- name: text
-- industry: text
-- address: text
-- homepage_url: text
-- approval_status: text
-- created_at: timestamp
-- members: jsonb
+- admin_id: varchar
+- manager_name: varchar
+- secret_number: varchar
+- role: varchar
+- company_id: uuid (FK -> companies.id) [ON DELETE SET NULL]
+- created_at: timestamp (default: CURRENT_TIMESTAMP)
+- updated_at: timestamp (default: CURRENT_TIMESTAMP)
+- admin_logs: jsonb (default: '[]'::jsonb)
+
+# 테이블 관계
+- companies.id <- users.company_id : 사용자가 속한 회사
+- companies.id <- admins.company_id : 관리자가 관리하는 회사
