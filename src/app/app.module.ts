@@ -6,28 +6,18 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
-import { MainComponent } from './main/main.component';
-import { SupabaseTestComponent } from './supabase-test/supabase-test.component';
-import { RegisterComponent } from './register/register.component';
-import { PendingComponent } from './pending/pending.component';
-import { AdminModule } from './admin/admin.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
-    MainComponent,
-    SupabaseTestComponent,
-    RegisterComponent,
-    PendingComponent
+    LoginComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule,
-    AdminModule
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

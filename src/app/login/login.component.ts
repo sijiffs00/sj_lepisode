@@ -4,16 +4,6 @@ import { supabase } from '../supabase';
 
 declare const Kakao: any;
 
-interface RegisterForm {
-  email: string;
-  name: string;
-  password: string;
-  passwordConfirm: string;
-  contact: string;
-  department: string;
-  position: string;
-}
-
 // 사용자 정보 인터페이스 정의
 interface UserInfo {
   id: number;  // 카카오 ID (int8)
@@ -200,150 +190,56 @@ interface UserInfo {
         border-bottom-left-radius: 30px;
         border-bottom-right-radius: 30px;
       }
-
-      .logo-text {
-        font-size: 16px;
-      }
-
-      .login-title {
-        font-size: 16px;
-      }
-
-      .kakao-login-btn {
-        font-size: 15px;
-        padding: 14px;
-      }
-
-      .login-title::before,
-      .login-title::after {
-        width: 30px;
-      }
-
-      .login-title::before {
-        left: -20px;
-      }
-
-      .login-title::after {
-        right: -20px;
-      }
     }
   `]
 })
 export class LoginComponent implements OnInit {
-  activeTab: 'login' | 'register' = 'login';
-  connectionStatus: string = '연결 확인 중...';
-  loginEmail: string = '';
-  loginPassword: string = '';
-  isLoading: boolean = false;
-  passwordMismatch: boolean = false;
-  isEmailValid: boolean = true;
-  emailErrorMessage: string = '';
-
-  registerForm: RegisterForm = {
-    email: '',
-    name: '',
-    password: '',
-    passwordConfirm: '',
-    contact: '',
-    department: '',
-    position: ''
-  };
-
-  // 직책 목록 추가
-  positionOptions: string[] = [
-    '사원',
-    '주임',
-    '대리',
-    '과장',
-    '차장',
-    '팀장',
-    '부장',
-    '이사',
-  ];
-
-  // 비밀번호 유효성 검사 결과
-  passwordValidation = {
-    isValid: false,
-    message: ''
-  };
-
   constructor(private router: Router) {}
 
   async ngOnInit() {
-    // 카카오 SDK 초기화
     this.initializeKakao();
-
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-
-      if (error) {
-        this.connectionStatus = '❌ Supabase 연결 실패: ' + error.message;
-        console.error('Supabase 연결 에러:', error);
-      } else {
-        this.connectionStatus = '✅ Supabase 연결 상태: 정상';
-        console.log('Supabase 연결 성공!');
-      }
-    } catch (error) {
-      this.connectionStatus = '❌ 연결 중 에러 발생';
-      console.error('에러:', error);
-    }
   }
 
   private initializeKakao() {
-    const KAKAO_JS_KEY = 'a854fc1241de8719121800ead8887a6d';
-    
-    try {
-      Kakao.init(KAKAO_JS_KEY);
-      console.log('Kakao SDK initialized:', Kakao.isInitialized());
-    } catch (error) {
-      console.error('Kakao SDK initialization failed:', error);
+    if (!Kakao.isInitialized()) {
+      Kakao.init('your-kakao-javascript-key');
     }
   }
 
   async loginWithKakao() {
     try {
-      // 카카오 로그인 요청
-      await Kakao.Auth.login({
-        success: (authObj: any) => {
-          console.log('Kakao login success:', authObj);
-          
-          // 사용자 정보 가져오기
-          Kakao.API.request({
-            url: '/v2/user/me',
-            success: async (res: any) => {
-              console.log('User info:', res);
-              
-              // 기본 사용자 정보 구성
-              const userInfo: Partial<UserInfo> = {
-                id: parseInt(res.id), // 문자열로 오는 카카오 ID를 숫자로 변환
-                name: res.kakao_account?.profile?.nickname || null,
-                joined_at: new Date().toISOString(),
-                registered_at: new Date().toISOString(),
-                auth_status: 'pending'  // 관리자 승인 대기 상태
-              };
-              
-              this.handleKakaoLogin(userInfo);
-            },
-            fail: (error: any) => {
-              console.error('Failed to get user info:', error);
-              alert('사용자 정보를 가져오는데 실패했습니다.');
-            }
-          });
-        },
-        fail: (error: any) => {
-          console.error('Kakao login failed:', error);
-          alert('카카오 로그인에 실패했습니다.');
-        }
+      const response = await new Promise<any>((resolve, reject) => {
+        Kakao.Auth.login({
+          success: (authObj: any) => resolve(authObj),
+          fail: (err: any) => reject(err)
+        });
       });
+
+      // 사용자 정보 가져오기
+      const userInfo = await new Promise<any>((resolve, reject) => {
+        Kakao.API.request({
+          url: '/v2/user/me',
+          success: (res: any) => resolve(res),
+          fail: (err: any) => reject(err)
+        });
+      });
+
+      // 카카오 로그인 처리
+      await this.handleKakaoLogin({
+        id: userInfo.id,
+        name: userInfo.properties?.nickname,
+        email: userInfo.kakao_account?.email
+      });
+
     } catch (error) {
-      console.error('Login process failed:', error);
-      alert('로그인 처리 중 오류가 발생했습니다.');
+      console.error('카카오 로그인 에러:', error);
+      alert('카카오 로그인 중 오류가 발생했습니다.');
     }
   }
 
   private async handleKakaoLogin(userInfo: Partial<UserInfo>) {
     try {
-      // 기존 회원인지 확인
+      // Supabase에서 사용자 확인
       const { data: existingUser, error: fetchError } = await supabase
         .from('users')
         .select('*')
@@ -354,199 +250,25 @@ export class LoginComponent implements OnInit {
         throw fetchError;
       }
 
-      if (existingUser) {
-        // 기존 회원이면 바로 메인 페이지로 이동
-        this.router.navigate(['/main']);
-        return;
+      if (!existingUser) {
+        // 새 사용자 등록
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: userInfo.id,
+            name: userInfo.name,
+            email: userInfo.email,
+            joined_at: new Date().toISOString()
+          }]);
+
+        if (insertError) throw insertError;
       }
 
-      // 신규 회원이면 회원가입 페이지로 이동
-      this.router.navigate(['/register'], {
-        state: { kakaoInfo: userInfo }
-      });
+      // 로그인 성공 후 메인 페이지로 이동
+      this.router.navigate(['/']);
     } catch (error) {
-      console.error('로그인 처리 중 오류:', error);
+      console.error('사용자 처리 중 오류:', error);
       alert('로그인 처리 중 오류가 발생했습니다.');
     }
-  }
-
-  async handleLogin() {
-    try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
-        email: this.loginEmail,
-        password: this.loginPassword
-      });
-
-      if (error) {
-        console.error('로그인 에러:', error.message);
-        alert('로그인 실패: ' + error.message);
-      } else {
-        console.log('로그인 성공:', user);
-        this.router.navigate(['/main']);
-      }
-    } catch (err) {
-      console.error('로그인 중 에러 발생:', err);
-      alert('로그인 중 에러가 발생했습니다.');
-    }
-  }
-
-  async handleRegister() {
-    // 이메일 유효성 한번 더 검사
-    if (!this.validateEmail(this.registerForm.email)) {
-      alert('올바른 이메일 형식을 입력해주세요.');
-      return;
-    }
-
-    // 필수 필드 검증
-    if (!this.registerForm.email || !this.registerForm.name || 
-        !this.registerForm.password || !this.registerForm.passwordConfirm ||
-        !this.registerForm.contact) {
-      alert('필수 항목을 모두 입력해주세요.');
-      return;
-    }
-
-    // 비밀번호 일치 검증
-    if (this.registerForm.password !== this.registerForm.passwordConfirm) {
-      this.passwordMismatch = true;
-      return;
-    }
-    this.passwordMismatch = false;
-
-    try {
-      this.isLoading = true;
-
-      // 1. Supabase Auth로 회원가입
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: this.registerForm.email,
-        password: this.registerForm.password
-      });
-
-      if (authError) throw authError;
-
-      // 2. users 테이블에 추가 정보 저장
-      const { error: userError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authData.user?.id,  // Auth에서 생성된 UUID
-            email: this.registerForm.email,
-            name: this.registerForm.name,
-            contact: this.registerForm.contact,
-            department: this.registerForm.department || null,  // 선택 입력
-            position: this.registerForm.position || null,      // 선택 입력
-            auth_status: 'pending',  // 관리자 승인 대기 상태
-            company_approval: 'PENDING_USER',  // 회사 승인 대기 상태
-            association_role: 'member'  // 기본값으로 일반 회원 설정
-          }
-        ]);
-
-      if (userError) throw userError;
-
-      alert('회원가입이 완료되었습니다. 관리자 승인 후 로그인이 가능합니다.');
-      this.activeTab = 'login';  // 로그인 탭으로 전환
-      this.resetForm();
-
-    } catch (error) {
-      console.error('회원가입 에러:', error);
-      alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  private resetForm() {
-    this.registerForm = {
-      email: '',
-      name: '',
-      password: '',
-      passwordConfirm: '',
-      contact: '',
-      department: '',
-      position: ''
-    };
-  }
-
-  // 이메일 유효성 검사 함수 추가
-  validateEmail(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
-  }
-
-  // 이메일 입력 변경 시 유효성 검사
-  onEmailChange(email: string, isRegister: boolean = false) {
-    if (!email) {
-      this.isEmailValid = true;
-      this.emailErrorMessage = '';
-      return;
-    }
-
-    this.isEmailValid = this.validateEmail(email);
-    if (!this.isEmailValid) {
-      this.emailErrorMessage = '올바른 이메일 형식이 아닙니다. (예: example@email.com)';
-    } else {
-      this.emailErrorMessage = '';
-    }
-  }
-
-  // 비밀번호 유효성 검사 함수
-  validatePassword(password: string): boolean {
-    if (!password) {
-      this.passwordValidation = {
-        isValid: false,
-        message: '비밀번호를 입력해주세요.'
-      };
-      return false;
-    }
-    
-    if (password.length < 6) {
-      this.passwordValidation = {
-        isValid: false,
-        message: '비밀번호는 최소 6자 이상이어야 합니다.'
-      };
-      return false;
-    }
-
-    // 영문, 숫자 포함 체크
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    
-    if (!hasLetter || !hasNumber) {
-      this.passwordValidation = {
-        isValid: false,
-        message: '비밀번호는 영문과 숫자를 모두 포함해야 합니다.'
-      };
-      return false;
-    }
-
-    this.passwordValidation = {
-      isValid: true,
-      message: '사용 가능한 비밀번호입니다.'
-    };
-    return true;
-  }
-
-  // 비밀번호 입력 변경 시 검사
-  onPasswordChange() {
-    this.validatePassword(this.registerForm.password);
-    
-    if (!this.registerForm.password || !this.registerForm.passwordConfirm) {
-      this.passwordMismatch = false;
-      return;
-    }
-    this.passwordMismatch = this.registerForm.password !== this.registerForm.passwordConfirm;
-  }
-
-  // Form 유효성 검사 수정
-  isFormValid(): boolean {
-    return (
-      !!this.registerForm.email &&
-      this.isEmailValid &&
-      !!this.registerForm.name &&
-      !!this.registerForm.contact &&
-      !!this.registerForm.password &&
-      !!this.registerForm.passwordConfirm &&
-      this.passwordValidation.isValid &&
-      !this.passwordMismatch
-    );
   }
 } 
