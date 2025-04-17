@@ -7,6 +7,7 @@ interface RegisterForm {
   name: string;
   contact: string;
   department: string;
+  company_id: string;
   position: string;
   email: string;
 }
@@ -56,7 +57,7 @@ interface Company {
                 <div 
                   class="dropdown-item" 
                   *ngFor="let company of companies" 
-                  (click)="onSelectCompany(company.name)">
+                  (click)="onSelectCompany(company)">
                   {{ company.name }}
                 </div>
               </div>
@@ -475,6 +476,7 @@ export class RegisterComponent implements OnInit {
     name: '',
     contact: '',
     department: '',
+    company_id: '',
     position: '',
     email: ''
   };
@@ -524,9 +526,10 @@ export class RegisterComponent implements OnInit {
     console.log('토글 후:', this.isDropdownOpen);
   }
 
-  onSelectCompany(companyName: string) {
-    console.log('선택된 회사:', companyName);
-    this.form.department = companyName;
+  onSelectCompany(company: Company) {
+    console.log('선택된 회사:', company);
+    this.form.department = company.name;
+    this.form.company_id = company.id;
     this.isDropdownOpen = false;
   }
 
@@ -574,6 +577,7 @@ export class RegisterComponent implements OnInit {
           name: this.form.name,
           contact: this.form.contact,
           department: this.form.department,
+          company_id: this.form.company_id,
           position: this.form.position || null,
           email: this.form.email || null,
           auth_status: 'pending',
