@@ -19,14 +19,12 @@ interface Company {
     <div class="company-list-container">
       <div class="page-header">
         <h2>기업 목록</h2>
-        <div class="header-actions">
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="기업명 검색..." [(ngModel)]="searchTerm">
-          </div>
-          <button class="add-btn">
-            <i class="fas fa-plus"></i> 신규 기업 등록
-          </button>
+      </div>
+      
+      <div class="search-container">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="기업명 검색..." [(ngModel)]="searchTerm">
         </div>
       </div>
 
@@ -60,10 +58,7 @@ interface Company {
     }
 
     .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .page-header h2 {
@@ -72,10 +67,8 @@ interface Company {
       margin: 0;
     }
 
-    .header-actions {
-      display: flex;
-      gap: 16px;
-      align-items: center;
+    .search-container {
+      margin-bottom: 24px;
     }
 
     .search-box {
