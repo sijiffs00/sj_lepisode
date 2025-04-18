@@ -258,7 +258,9 @@ export class LoginComponent implements OnInit {
 
       if (!existingUser) {
         console.log('새로운 사용자! /register로 이동합니다. userInfo.id:', userInfo.id);
-        this.router.navigate(['/register']);
+        this.router.navigate(['/register'], { 
+          state: { userInfo } 
+        });
       } else {
         console.log('기존 사용자! /main으로 이동합니다. userInfo.id:', userInfo.id);
         this.router.navigate(['/main']);
