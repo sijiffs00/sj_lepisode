@@ -18,6 +18,8 @@ import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
 import { CompaniesComponent } from './main/companies/companies.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
+import { CompanyService } from './services/company.service';
+import { SupabaseService } from './services/supabase.service';
 
 @NgModule({
   declarations: [
@@ -42,7 +44,10 @@ import { MyPageComponent } from './main/mypage/mypage.component';
     AdminModule,
     CommonModule
   ],
-  providers: [],
+  providers: [
+    CompanyService,
+    SupabaseService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

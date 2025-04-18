@@ -19,6 +19,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('companies')
       .select('*')
+      .eq('approval_status', 'approved')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
