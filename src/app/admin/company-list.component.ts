@@ -1,7 +1,20 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { SupabaseService } from '../services/supabase.service';
+
+interface Company {
+  id: number;
+  name: string;
+  industry: string;
+  ceo_name: string;
+  created_at: string;
+}
 
 @Component({
   selector: 'app-company-list',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="company-list-container">
       <div class="page-header">
@@ -17,50 +30,27 @@ import { Component, OnInit } from '@angular/core';
         </div>
       </div>
 
-      <div class="filter-section">
-        <div class="filter-group">
-          <label>상태:</label>
-          <select [(ngModel)]="statusFilter">
-            <option value="all">전체</option>
-            <option value="active">활성</option>
-            <option value="inactive">비활성</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>정렬:</label>
-          <select [(ngModel)]="sortBy">
-            <option value="name">기업명</option>
-            <option value="date">등록일</option>
-            <option value="members">구성원 수</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="company-grid">
-        <div class="company-card" *ngFor="let company of companies">
-          <div class="company-logo">
-            <img [src]="company.logoUrl || 'assets/default-company.png'" [alt]="company.name">
-          </div>
-          <div class="company-info">
-            <h3>{{company.name}}</h3>
-            <p class="company-type">{{company.type}}</p>
-            <div class="company-details">
-              <span><i class="fas fa-users"></i> {{company.memberCount}}명</span>
-              <span><i class="fas fa-calendar"></i> {{company.joinDate | date:'yyyy.MM.dd'}}</span>
-            </div>
-            <div class="status-badge" [class.active]="company.status === 'active'">
-              {{company.status === 'active' ? '활성' : '비활성'}}
-            </div>
-          </div>
-          <div class="company-actions">
-            <button class="action-btn view">
-              <i class="fas fa-eye"></i> 상세보기
-            </button>
-            <button class="action-btn edit">
-              <i class="fas fa-pen"></i> 수정
-            </button>
-          </div>
-        </div>
+      <div class="table-container">
+        <table class="company-table">
+          <thead>
+            <tr>
+              <th>순번</th>
+              <th>기업명</th>
+              <th>업종</th>
+              <th>대표자</th>
+              <th>가입일시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let company of companies; let i = index">
+              <td>{{i + 1}}</td>
+              <td>{{company.name}}</td>
+              <td>{{company.industry}}</td>
+              <td>{{company.ceo_name}}</td>
+              <td>{{company.created_at | date:'yyyy-MM-dd HH:mm'}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   `,
@@ -126,174 +116,51 @@ import { Component, OnInit } from '@angular/core';
       background: #2980b9;
     }
 
-    .filter-section {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .filter-group label {
-      color: #666;
-    }
-
-    .filter-group select {
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+    .table-container {
       background: white;
-    }
-
-    .company-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-
-    .company-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
-    }
-
-    .company-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .company-logo {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 16px;
-    }
-
-    .company-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
       border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
 
-    .company-info h3 {
-      margin: 0 0 4px 0;
-      color: #2c3e50;
-      font-size: 18px;
+    .company-table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .company-type {
-      color: #7f8c8d;
-      font-size: 14px;
-      margin: 0 0 12px 0;
+    .company-table th,
+    .company-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
     }
 
-    .company-details {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 12px;
-    }
-
-    .company-details span {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      background: #e74c3c;
-      color: white;
-      margin-bottom: 16px;
-    }
-
-    .status-badge.active {
-      background: #2ecc71;
-    }
-
-    .company-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .action-btn {
-      flex: 1;
-      padding: 8px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 13px;
-      transition: background 0.3s;
-    }
-
-    .action-btn.view {
+    .company-table th {
       background: #f8f9fa;
       color: #2c3e50;
+      font-weight: 600;
     }
 
-    .action-btn.view:hover {
-      background: #e9ecef;
+    .company-table tr:hover {
+      background: #f8f9fa;
     }
 
-    .action-btn.edit {
-      background: #e9ecef;
+    .company-table td {
       color: #2c3e50;
-    }
-
-    .action-btn.edit:hover {
-      background: #dee2e6;
     }
   `]
 })
 export class CompanyListComponent implements OnInit {
   searchTerm = '';
-  statusFilter = 'all';
-  sortBy = 'name';
+  companies: Company[] = [];
 
-  // 임시 데이터
-  companies = [
-    {
-      name: '(주)테크스타트',
-      type: 'IT 서비스',
-      memberCount: 25,
-      joinDate: new Date('2023-01-15'),
-      status: 'active',
-      logoUrl: null
-    },
-    {
-      name: '미래솔루션',
-      type: '소프트웨어 개발',
-      memberCount: 15,
-      joinDate: new Date('2023-03-22'),
-      status: 'active',
-      logoUrl: null
-    },
-    {
-      name: '스마트테크',
-      type: '시스템 통합',
-      memberCount: 8,
-      joinDate: new Date('2023-06-10'),
-      status: 'inactive',
-      logoUrl: null
+  constructor(private supabaseService: SupabaseService) {}
+
+  async ngOnInit() {
+    try {
+      this.companies = await this.supabaseService.getCompanies();
+    } catch (error) {
+      console.error('Error fetching companies:', error);
     }
-  ];
-
-  constructor() {}
-
-  ngOnInit() {
-    // 여기에 기업 목록을 불러오는 로직이 들어갈 거야
   }
 } 

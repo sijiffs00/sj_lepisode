@@ -1,24 +1,21 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-
 import { AdminDashComponent } from './admin-dash.component';
-import { CompanyListComponent } from './company-list.component';
 
 @NgModule({
   declarations: [
-    AdminDashComponent,
-    CompanyListComponent
+    AdminDashComponent
   ],
   imports: [
     CommonModule,
-    FormsModule,
-    RouterModule
+    RouterModule.forChild([
+      { path: 'dashboard', component: AdminDashComponent },
+      { path: 'companies', loadComponent: () => import('./company-list.component').then(m => m.CompanyListComponent) }
+    ])
   ],
   exports: [
-    AdminDashComponent,
-    CompanyListComponent
+    AdminDashComponent
   ]
 })
 export class AdminModule { } 
