@@ -9,7 +9,7 @@ import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
 import { AdminLoginComponent } from './admin/admin-login.component';
-import { AdminDashComponent } from './admin/admin-dash.component';
+import { AdminModule } from './admin/admin.module';
 
 @NgModule({
   declarations: [
@@ -17,15 +17,15 @@ import { AdminDashComponent } from './admin/admin-dash.component';
     LoginComponent,
     MainComponent,
     RegisterComponent,
-    AdminLoginComponent,
-    AdminDashComponent
+    AdminLoginComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    AdminModule
   ],
   providers: [],
   bootstrap: [AppComponent]

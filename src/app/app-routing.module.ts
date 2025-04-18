@@ -5,6 +5,7 @@ import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
 import { AdminLoginComponent } from './admin/admin-login.component';
 import { AdminDashComponent } from './admin/admin-dash.component';
+import { CompanyListComponent } from './admin/company-list.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -12,7 +13,13 @@ const routes: Routes = [
   { path: 'main', component: MainComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'admin/login', component: AdminLoginComponent },
-  { path: 'admin/dash', component: AdminDashComponent }
+  { 
+    path: 'admin/dash', 
+    component: AdminDashComponent,
+    children: [
+      { path: 'company-list', component: CompanyListComponent }
+    ]
+  }
 ];
 
 @NgModule({
