@@ -8,13 +8,17 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
+import { AdminLoginComponent } from './admin/admin-login.component';
+import { AdminDashComponent } from './admin/admin-dash.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     MainComponent,
-    RegisterComponent
+    RegisterComponent,
+    AdminLoginComponent,
+    AdminDashComponent
   ],
   imports: [
     BrowserModule,
