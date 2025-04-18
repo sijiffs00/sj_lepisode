@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
   selector: 'app-main',
   template: `
     <div class="main-container">
-      <header class="main-header">
+      <header class="main-header" *ngIf="currentTab !== 'companies'">
         <h1>광주전남벤처기업협회</h1>
         <p>환영합니다! 👋</p>
       </header>
