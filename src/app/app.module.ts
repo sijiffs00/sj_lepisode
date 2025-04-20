@@ -3,13 +3,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
-import { AdminLoginComponent } from './admin/admin-login.component';
 import { AdminModule } from './admin/admin.module';
 
 // 메인 페이지의 자식 컴포넌트들 import
@@ -27,8 +27,6 @@ import { SupabaseService } from './services/supabase.service';
     LoginComponent,
     MainComponent,
     RegisterComponent,
-    AdminLoginComponent,
-    // 새로운 컴포넌트들 등록
     SearchComponent,
     MembersComponent,
     OrganizationComponent,
@@ -40,6 +38,7 @@ import { SupabaseService } from './services/supabase.service';
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    RouterModule,
     AppRoutingModule,
     AdminModule,
     CommonModule

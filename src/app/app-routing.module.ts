@@ -3,9 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
-import { AdminLoginComponent } from './admin/admin-login.component';
-import { AdminDashComponent } from './admin/admin-dash.component';
-import { CompanyListComponent } from './admin/company-list.component';
 
 // 메인 페이지의 자식 컴포넌트들 import
 import { SearchComponent } from './main/search/search.component';
@@ -30,13 +27,9 @@ const routes: Routes = [
     ]
   },
   { path: 'register', component: RegisterComponent },
-  { path: 'admin/login', component: AdminLoginComponent },
-  { 
-    path: 'admin/dash', 
-    component: AdminDashComponent,
-    children: [
-      { path: 'company-list', component: CompanyListComponent }
-    ]
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
   }
 ];
 
