@@ -3,6 +3,17 @@ import { UserService } from '../../services/user.service';
 import { supabase } from '../../supabase';
 import { UserInfo } from '../../interfaces/user.interface';
 
+interface CompanyInfo {
+  id: string;
+  name: string;
+  logo_url: string;
+  industry: string;
+  ceo_name: string;
+  address: string;
+  members: any[];
+  approval_status: string;
+}
+
 @Component({
   selector: 'app-mypage',
   template: `
@@ -57,6 +68,55 @@ import { UserInfo } from '../../interfaces/user.interface';
         </button>
       </div>
 
+      <h1 class="page-title company-title">내 기업</h1>
+
+      <div class="company-card" *ngIf="companyInfo">
+        <div class="company-header">
+          <div class="company-logo">
+            <img [src]="companyInfo.logo_url || 'assets/default-company-logo.png'" alt="기업 로고">
+          </div>
+          <span class="approval-badge" [class.pending]="companyInfo.approval_status !== 'approved'">
+            {{ companyInfo.approval_status === 'approved' ? '승인완료' : '승인 대기' }}
+          </span>
+        </div>
+
+        <div class="company-name">
+          {{ companyInfo.name }}
+        </div>
+        <div class="company-industry">
+          {{ companyInfo.industry || '도소매/엔터/전자상거래' }}
+        </div>
+
+        <div class="company-info-list">
+          <div class="company-info-item">
+            <div class="icon-label">
+              <i class="info-icon ceo-icon"></i>
+              <span class="label">대표자명</span>
+            </div>
+            <div class="value">{{ companyInfo.ceo_name }}</div>
+          </div>
+
+          <div class="company-info-item">
+            <div class="icon-label">
+              <i class="info-icon location-icon"></i>
+              <span class="label">소재지</span>
+            </div>
+            <div class="value">{{ companyInfo.address }}</div>
+          </div>
+
+          <div class="company-info-item">
+            <div class="icon-label">
+              <i class="info-icon members-icon"></i>
+              <span class="label">구성원</span>
+            </div>
+            <div class="value">
+              {{ companyInfo.members?.length || 0 }}명
+              <button class="view-members-button">목록으로</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="loading" *ngIf="isLoading">
         정보를 불러오는 중...
       </div>
@@ -80,11 +140,106 @@ import { UserInfo } from '../../interfaces/user.interface';
       margin: 0 0 24px 0;
     }
 
-    .profile-card {
+    .company-title {
+      margin-top: 40px;
+    }
+
+    .profile-card, .company-card {
       background: #FFFFFF;
       border-radius: 16px;
       padding: 24px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .company-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .company-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 1px solid #E0E0E0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .company-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .approval-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      background: #FFF3E0;
+      color: #FF9800;
+    }
+
+    .approval-badge.approved {
+      background: #E8F5E9;
+      color: #4CAF50;
+    }
+
+    .company-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .company-industry {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .company-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .company-info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .view-members-button {
+      margin-left: 12px;
+      padding: 4px 12px;
+      border: 1px solid #5BBBB3;
+      border-radius: 16px;
+      color: #5BBBB3;
+      background: transparent;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .view-members-button:hover {
+      background: #5BBBB3;
+      color: white;
+    }
+
+    .ceo-icon {
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>');
+    }
+
+    .location-icon {
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>');
+    }
+
+    .members-icon {
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>');
     }
 
     .user-name {
@@ -209,12 +364,16 @@ import { UserInfo } from '../../interfaces/user.interface';
 
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
-      .profile-card {
+      .profile-card, .company-card {
         background: #2a2a2a;
       }
 
-      .user-name {
+      .user-name, .company-name {
         color: #fff;
+      }
+
+      .company-industry {
+        color: #999;
       }
 
       .value {
@@ -229,12 +388,23 @@ import { UserInfo } from '../../interfaces/user.interface';
       .edit-button:hover {
         background: #444;
       }
+
+      .view-members-button {
+        border-color: #5BBBB3;
+        color: #5BBBB3;
+      }
+
+      .view-members-button:hover {
+        background: #5BBBB3;
+        color: #2a2a2a;
+      }
     }
   `]
 })
 export class MyPageComponent implements OnInit {
   userId: number | null = null;
   userInfo: UserInfo | null = null;
+  companyInfo: CompanyInfo | null = null;
   isLoading = false;
   errorMessage = '';
 
@@ -259,32 +429,44 @@ export class MyPageComponent implements OnInit {
       this.isLoading = true;
       this.errorMessage = '';
 
-      const { data, error } = await supabase
+      // 사용자 정보와 회사 정보를 함께 가져오기
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select(`
           *,
-          company:company_id (
-            name
-          )
+          company:company_id (*)
         `)
         .eq('id', this.userId)
         .single();
 
-      if (error) throw error;
+      if (userError) throw userError;
 
-      this.userInfo = data;
+      this.userInfo = userData;
+      
+      // 회사 정보가 있으면 추가 정보 로드
+      if (userData.company_id) {
+        const { data: companyData, error: companyError } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('id', userData.company_id)
+          .single();
+
+        if (companyError) throw companyError;
+        this.companyInfo = companyData;
+      }
+
       console.log('사용자 정보 로드됨:', this.userInfo);
+      console.log('회사 정보 로드됨:', this.companyInfo);
       
     } catch (error) {
-      console.error('사용자 정보 로드 중 오류:', error);
-      this.errorMessage = '사용자 정보를 불러오는 중 오류가 발생했습니다.';
+      console.error('정보 로드 중 오류:', error);
+      this.errorMessage = '정보를 불러오는 중 오류가 발생했습니다.';
     } finally {
       this.isLoading = false;
     }
   }
 
   editProfile() {
-    // 프로필 수정 기능은 나중에 구현할게!
     console.log('프로필 수정 버튼 클릭됨');
   }
 } 
