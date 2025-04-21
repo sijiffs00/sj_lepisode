@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-main',
@@ -210,10 +211,23 @@ import { Router } from '@angular/router';
     }
   `]
 })
-export class MainComponent {
+export class MainComponent implements OnInit {
   currentTab = 'search';  // 기본 탭을 검색으로 변경
+  userId: number | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private userService: UserService) {}
+
+  ngOnInit() {
+    // 서비스에서 사용자 ID 가져오기
+    this.userId = this.userService.getUserId();
+    console.log('Main 컴포넌트에서 사용자 ID:', this.userId);
+
+    // 사용자 ID 변경 구독
+    this.userService.userId$.subscribe(id => {
+      this.userId = id;
+      console.log('사용자 ID 업데이트됨:', id);
+    });
+  }
 
   navigate(tab: string) {
     this.currentTab = tab;

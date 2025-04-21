@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../supabase';
+import { UserService } from '../services/user.service';
 
 declare const Kakao: any;
 
@@ -194,7 +195,10 @@ interface UserInfo {
   `]
 })
 export class LoginComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private userService: UserService
+  ) {}
 
   async ngOnInit() {
     this.initializeKakao();
@@ -263,6 +267,8 @@ export class LoginComponent implements OnInit {
         });
       } else {
         console.log('기존 사용자! /main으로 이동합니다. userInfo.id:', userInfo.id);
+        // 사용자 ID를 서비스에 저장하고 main으로 이동
+        this.userService.setUserId(userInfo.id!);
         this.router.navigate(['/main']);
       }
     } catch (error) {
