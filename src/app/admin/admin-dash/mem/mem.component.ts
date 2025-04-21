@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AdminService } from '../../../services/admin.service';
+import { supabase } from '../../../supabase';
 
 @Component({
   selector: 'app-admin-dash-mem',
@@ -15,6 +17,10 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class AdminDashMemComponent {
-  constructor() {}
+export class AdminDashMemComponent implements OnInit {
+  constructor(private adminService: AdminService) {}
+
+  ngOnInit() {
+    // 필요한 초기화 작업이 있다면 여기에 추가
+  }
 } 

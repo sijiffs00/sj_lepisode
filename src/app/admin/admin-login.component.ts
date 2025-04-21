@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../supabase';
+import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-admin-login',
@@ -132,7 +133,10 @@ export class AdminLoginComponent {
   isFormValid: boolean = false;
   errorMessage: string = '';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private adminService: AdminService
+  ) {}
 
   checkFormValidity() {
     this.isFormValid = 
@@ -160,14 +164,14 @@ export class AdminLoginComponent {
       }
 
       if (adminUser.secret_number === this.secretNumber) {
-        // 로그인 성공 시 관리자 정보를 세션에 저장
-        sessionStorage.setItem('admin', JSON.stringify({
+        // AdminService를 통해 관리자 정보 저장
+        this.adminService.setAdminInfo({
           id: adminUser.id,
           adminId: adminUser.admin_id,
           managerName: adminUser.manager_name,
           role: adminUser.role,
           companyId: adminUser.company_id
-        }));
+        });
         
         // 로그인 성공
         this.router.navigate(['/admin/dash']);
