@@ -14,6 +14,28 @@ declare global {
     <div class="companies-container">
       <h2>기업현황</h2>
       <div id="map" class="map-container"></div>
+      
+      <!-- 바텀시트 UI -->
+      <div class="bottom-sheet" 
+           [class.expanded]="isBottomSheetExpanded"
+           [style.transform]="'translateY(' + bottomSheetPosition + 'px)'"
+           (touchstart)="onTouchStart($event)"
+           (touchmove)="onTouchMove($event)"
+           (touchend)="onTouchEnd()"
+           (click)="toggleBottomSheet()">
+        <div class="bottom-sheet-header">
+          <div class="handle"></div>
+          <h3>기업 목록 <span class="company-count">({{ companies.length }})</span></h3>
+        </div>
+        <div class="bottom-sheet-content" (click)="$event.stopPropagation()">
+          <div class="company-list">
+            <div *ngFor="let company of companies" class="company-item" (click)="selectCompany(company)">
+              <h4>{{ company.name }}</h4>
+              <p>{{ company.address }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -25,6 +47,7 @@ declare global {
       width: 100%;
       padding: 16px;
       box-sizing: border-box;
+      position: relative;
     }
 
     h2 {
@@ -34,19 +57,159 @@ declare global {
 
     .map-container {
       width: 100%;
-      height: calc(100vh - 180px); /* 화면 높이에서 헤더와 네비게이션 높이를 뺀 값 */
+      height: calc(100vh - 180px);
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
+    /* 바텀시트 스타일 */
+    .bottom-sheet {
+      position: fixed;
+      bottom: 64px;
+      left: 16px;
+      right: 16px;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease-out;
+      z-index: 1000;
+      touch-action: none;
+      height: 80vh; /* 화면 높이의 80%로 제한 */
+    }
+
+    .bottom-sheet.expanded {
+      transform: translateY(0) !important;
+    }
+
+    .bottom-sheet-header {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      background: white;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .handle {
+      width: 40px;
+      height: 4px;
+      background-color: #DDD;
+      border-radius: 2px;
+      margin-bottom: 12px;
+    }
+
+    .bottom-sheet-header h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .bottom-sheet-content {
+      height: calc(80vh - 60px); /* 헤더 높이 제외 */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .company-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 80px; /* 하단 여백 추가 */
+    }
+
+    .company-item {
+      padding: 16px;
+      background: #f8f8f8;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .company-item:hover {
+      background: #f0f0f0;
+    }
+
+    .company-item h4 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .company-item p {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* 다크모드 대응 */
+    @media (prefers-color-scheme: dark) {
+      .bottom-sheet {
+        background: #2a2a2a;
+      }
+
+      .bottom-sheet-header {
+        background: #2a2a2a;
+      }
+
+      .bottom-sheet-header h3 {
+        color: #fff;
+      }
+
+      .company-item {
+        background: #333;
+      }
+
+      .company-item:hover {
+        background: #404040;
+      }
+
+      .company-item h4 {
+        color: #fff;
+      }
+
+      .company-item p {
+        color: #ccc;
+      }
+
+      .company-count {
+        color: #999;
+      }
+    }
+
+    /* iOS Safari 대응 */
+    @supports (-webkit-touch-callout: none) {
+      .bottom-sheet {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    .company-count {
+      font-size: 14px;
+      color: #666;
+      margin-left: 4px;
+    }
   `]
 })
 export class CompaniesComponent implements OnInit {
-  private companies: Company[] = [];
+  public companies: Company[] = [];
   private map: any;
   private geocoder: any;
+  isBottomSheetExpanded = false;
+  
+  // 드래그 관련 변수들
+  private touchStartY = 0;
+  private touchCurrentY = 0;
+  private initialPosition = 0;
+  bottomSheetPosition = 0;
+  private readonly SNAP_TOP = 0;
+  private readonly SNAP_BOTTOM = window.innerHeight - 200;
 
-  constructor(private companyService: CompanyService) {}
+  constructor(private companyService: CompanyService) {
+    // 초기 바텀시트 위치 설정
+    this.bottomSheetPosition = this.SNAP_BOTTOM - 80;
+  }
 
   async ngOnInit() {
     try {
@@ -146,5 +309,69 @@ export class CompaniesComponent implements OnInit {
       }
     }
     console.log('모든 마커 추가 완료!');
+  }
+
+  // 터치 시작 시
+  onTouchStart(event: TouchEvent) {
+    this.touchStartY = event.touches[0].clientY;
+    this.initialPosition = this.bottomSheetPosition;
+    
+    // 트랜지션 효과 제거로 드래그 시 자연스럽게
+    const sheet = event.currentTarget as HTMLElement;
+    sheet.style.transition = 'none';
+  }
+
+  // 터치 이동 시
+  onTouchMove(event: TouchEvent) {
+    event.preventDefault(); // 스크롤 방지
+    this.touchCurrentY = event.touches[0].clientY;
+    const deltaY = this.touchCurrentY - this.touchStartY;
+    
+    // 현재 위치 계산
+    let newPosition = this.initialPosition + deltaY;
+    
+    // 경계값 처리
+    if (newPosition < this.SNAP_TOP) newPosition = this.SNAP_TOP;
+    if (newPosition > this.SNAP_BOTTOM) newPosition = this.SNAP_BOTTOM;
+    
+    this.bottomSheetPosition = newPosition;
+  }
+
+  // 터치 종료 시
+  onTouchEnd() {
+    // 트랜지션 효과 복구
+    const sheet = document.querySelector('.bottom-sheet') as HTMLElement;
+    if (sheet) {
+      sheet.style.transition = 'transform 0.2s ease-out';
+      
+      // 현재 위치에 따라 스냅 위치 결정
+      const middlePoint = (this.SNAP_TOP + this.SNAP_BOTTOM) / 2;
+      
+      if (this.bottomSheetPosition < middlePoint) {
+        // 위로 스냅
+        this.bottomSheetPosition = this.SNAP_TOP;
+        this.isBottomSheetExpanded = true;
+      } else {
+        // 아래로 스냅
+        this.bottomSheetPosition = this.SNAP_BOTTOM - 80;
+        this.isBottomSheetExpanded = false;
+      }
+    }
+  }
+
+  toggleBottomSheet() {
+    this.isBottomSheetExpanded = !this.isBottomSheetExpanded;
+    this.bottomSheetPosition = this.isBottomSheetExpanded ? this.SNAP_TOP : this.SNAP_BOTTOM - 80;
+  }
+
+  selectCompany(company: Company) {
+    // 회사 선택 시 해당 위치로 지도 이동
+    this.geocoder.addressSearch(company.address, (result: any[], status: any) => {
+      if (status === window.kakao.maps.services.Status.OK) {
+        const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+        this.map.setCenter(coords);
+        this.map.setLevel(3); // 지도 확대
+      }
+    });
   }
 } 
