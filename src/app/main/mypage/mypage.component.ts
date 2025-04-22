@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { supabase } from '../../supabase';
 import { UserInfo } from '../../interfaces/user.interface';
@@ -408,7 +409,10 @@ export class MyPageComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.userId = this.userService.getUserId();
@@ -467,6 +471,6 @@ export class MyPageComponent implements OnInit {
   }
 
   editProfile() {
-    console.log('프로필 수정 버튼 클릭됨');
+    this.router.navigate(['/main/mypage/update']);
   }
 } 

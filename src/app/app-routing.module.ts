@@ -10,6 +10,7 @@ import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
 import { CompaniesComponent } from './main/companies/companies.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
+import { UpdateComponent } from './pages/update/update.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -30,7 +31,8 @@ const routes: Routes = [
   {
     path: 'admin',
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
-  }
+  },
+  { path: 'main/mypage/update', component: UpdateComponent }
 ];
 
 @NgModule({

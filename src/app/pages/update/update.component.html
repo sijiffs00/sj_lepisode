@@ -1,0 +1,43 @@
+<div class="update-container">
+  <div class="header">
+    <button class="back-button" (click)="goBack()">←</button>
+    <h1>회원 정보 수정</h1>
+  </div>
+
+  <form [formGroup]="updateForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label>이름 <span class="required">*</span></label>
+      <input type="text" formControlName="name" placeholder="김정대">
+    </div>
+
+    <div class="form-group">
+      <label>소속</label>
+      <input type="text" formControlName="affiliation" placeholder="호남대학교 창의교양대학">
+    </div>
+
+    <div class="form-group">
+      <label>직위/직책</label>
+      <input type="text" formControlName="position" placeholder="교수">
+    </div>
+
+    <div class="form-group">
+      <label>연락처 <span class="required">*</span></label>
+      <input type="text" formControlName="contact" placeholder="검색어를 입력해주세요.">
+    </div>
+
+    <div class="form-group">
+      <label>이메일 <span class="required">*</span></label>
+      <input type="email" formControlName="email" placeholder="검색어를 입력해주세요.">
+    </div>
+
+    <div class="form-group">
+      <label>협회 직위/직책</label>
+      <input type="text" value="자문위원" disabled>
+    </div>
+
+    <div class="button-group">
+      <button type="button" class="cancel-button" (click)="goBack()">취소</button>
+      <button type="submit" class="confirm-button">확인</button>
+    </div>
+  </form>
+</div> 

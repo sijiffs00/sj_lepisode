@@ -20,6 +20,7 @@ import { CompaniesComponent } from './main/companies/companies.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { CompanyService } from './services/company.service';
 import { SupabaseService } from './services/supabase.service';
+import { UpdateComponent } from './pages/update/update.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,8 @@ import { SupabaseService } from './services/supabase.service';
     MembersComponent,
     OrganizationComponent,
     CompaniesComponent,
-    MyPageComponent
+    MyPageComponent,
+    UpdateComponent
   ],
   imports: [
     BrowserModule,
