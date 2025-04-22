@@ -12,7 +12,18 @@ declare global {
   selector: 'app-companies',
   template: `
     <div class="companies-container">
-      <h2>기업현황</h2>
+      <!-- 상단 검색 UI -->
+      <div class="search-header">
+        <button class="menu-button" (click)="openBottomSheet($event)">
+          <span class="menu-icon">≡</span>
+          목록
+        </button>
+        <div class="search-input-container">
+          <input type="text" placeholder="검색어를 입력해 주세요." class="search-input">
+        </div>
+        <button class="close-button">✕</button>
+      </div>
+
       <div id="map" class="map-container"></div>
       
       <!-- 바텀시트 UI -->
@@ -42,23 +53,71 @@ declare global {
     .companies-container {
       display: flex;
       flex-direction: column;
-      align-items: center;
       height: 100%;
       width: 100%;
-      padding: 16px;
       box-sizing: border-box;
+      position: relative;
+      background-color: #fff;
+    }
+
+    /* 검색 헤더 스타일 */
+    .search-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      background: white;
+      gap: 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .menu-button {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #4B96B4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .menu-icon {
+      font-size: 20px;
+    }
+
+    .search-input-container {
+      flex: 1;
       position: relative;
     }
 
-    h2 {
-      margin: 0 0 16px 0;
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 100px;
+      background: #f5f5f5;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: #999;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
       font-size: 24px;
+      color: #666;
+      cursor: pointer;
+      padding: 8px;
     }
 
     .map-container {
       width: 100%;
-      height: calc(100vh - 180px);
-      border-radius: 12px;
+      height: calc(100vh - 120px); /* 상단 여백 제거로 높이 조정 */
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
@@ -373,5 +432,12 @@ export class CompaniesComponent implements OnInit {
         this.map.setLevel(3); // 지도 확대
       }
     });
+  }
+
+  // 목록 버튼 클릭 시 바텀시트 열기
+  openBottomSheet(event: Event) {
+    event.stopPropagation(); // 이벤트 전파 중단
+    this.isBottomSheetExpanded = true;
+    this.bottomSheetPosition = this.SNAP_TOP;
   }
 } 
