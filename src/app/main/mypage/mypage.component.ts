@@ -471,6 +471,10 @@ export class MyPageComponent implements OnInit {
   }
 
   editProfile() {
-    this.router.navigate(['/main/mypage/update']);
+    if (this.userId) {
+      this.router.navigate(['/main/mypage/update'], {
+        queryParams: { id: this.userId }
+      });
+    }
   }
 } 
