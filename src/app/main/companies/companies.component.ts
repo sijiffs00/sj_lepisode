@@ -21,7 +21,9 @@ declare global {
         <div class="search-input-container">
           <input type="text" placeholder="검색어를 입력해 주세요." class="search-input">
         </div>
-        <button class="close-button">✕</button>
+        <button class="close-button">
+          <span class="close-icon">×</span>
+        </button>
       </div>
 
       <div id="map" class="map-container"></div>
@@ -66,11 +68,12 @@ declare global {
       align-items: center;
       padding: 8px 16px;
       background: white;
-      gap: 12px;
+      gap: 16px;
       border-bottom: 1px solid #eee;
     }
 
     .menu-button {
+      flex-shrink: 0; /* 버튼 크기 고정 */
       display: flex;
       align-items: center;
       gap: 4px;
@@ -90,6 +93,7 @@ declare global {
     .search-input-container {
       flex: 1;
       position: relative;
+      max-width: calc(100% - 200px); /* 180px에서 200px로 수정해서 검색창 너비 약간 줄임 */
     }
 
     .search-input {
@@ -107,12 +111,30 @@ declare global {
     }
 
     .close-button {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: none;
       border: none;
-      font-size: 24px;
-      color: #666;
       cursor: pointer;
       padding: 8px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      margin-left: 12px; /* 4px에서 12px로 증가 */
+    }
+
+    .close-button:hover {
+      background-color: #f5f5f5;
+    }
+
+    .close-icon {
+      font-size: 28px;
+      color: #333;
+      font-weight: 300;
+      line-height: 1;
     }
 
     .map-container {
@@ -134,7 +156,7 @@ declare global {
       transition: transform 0.2s ease-out;
       z-index: 1000;
       touch-action: none;
-      height: 80vh; /* 화면 높이의 80%로 제한 */
+      height: 45vh; /* 60vh에서 45vh로 변경 */
     }
 
     .bottom-sheet.expanded {
@@ -166,7 +188,7 @@ declare global {
     }
 
     .bottom-sheet-content {
-      height: calc(80vh - 60px); /* 헤더 높이 제외 */
+      height: calc(45vh - 60px); /* 헤더 높이 제외, 60vh에서 45vh로 변경 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -234,6 +256,14 @@ declare global {
 
       .company-count {
         color: #999;
+      }
+
+      .close-icon {
+        color: #fff;
+      }
+
+      .close-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
       }
     }
 
