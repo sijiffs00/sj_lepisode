@@ -63,10 +63,12 @@ interface CompanyInfo {
           </div>
         </div>
 
-        <button class="edit-button" (click)="editProfile()">
-          <i class="edit-icon"></i>
-          회원정보 수정
-        </button>
+        <div class="button-container">
+          <button class="edit-button" (click)="editProfile()">
+            <i class="edit-icon"></i>
+            회원정보 수정
+          </button>
+        </div>
       </div>
 
       <h1 class="page-title company-title">내 기업</h1>
@@ -117,6 +119,10 @@ interface CompanyInfo {
           </div>
         </div>
       </div>
+
+      <button class="logout-button" (click)="logout()">
+        로그아웃
+      </button>
 
       <div class="loading" *ngIf="isLoading">
         정보를 불러오는 중...
@@ -351,6 +357,26 @@ interface CompanyInfo {
       background-repeat: no-repeat;
     }
 
+    .logout-button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 12px;
+      border: 1px solid #E0E0E0;
+      border-radius: 8px;
+      background: #FFFFFF;
+      color: #666666;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-button:hover {
+      background: #F5F5F5;
+    }
+
     .loading {
       text-align: center;
       padding: 20px;
@@ -398,6 +424,15 @@ interface CompanyInfo {
       .view-members-button:hover {
         background: #5BBBB3;
         color: #2a2a2a;
+      }
+
+      .logout-button {
+        background: #333;
+        color: #fff;
+      }
+
+      .logout-button:hover {
+        background: #444;
       }
     }
   `]
@@ -475,6 +510,15 @@ export class MyPageComponent implements OnInit {
       this.router.navigate(['/main/mypage/update'], {
         queryParams: { id: this.userId }
       });
+    }
+  }
+
+  async logout() {
+    try {
+      await this.userService.logout();
+    } catch (error) {
+      console.error('로그아웃 중 오류 발생:', error);
+      this.errorMessage = '로그아웃 중 오류가 발생했습니다.';
     }
   }
 } 
