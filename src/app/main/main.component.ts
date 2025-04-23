@@ -6,11 +6,9 @@ import { UserService } from '../services/user.service';
   selector: 'app-main',
   template: `
     <div class="main-container">
-      <header class="main-header" *ngIf="currentTab !== 'companies'">
-        <h1>광주전남벤처기업협회</h1>
-        <p>환영합니다! 👋</p>
-      </header>
-      
+      <div class="logo-container">
+        <img src="assets/gjva_logo.png" alt="GJVA 로고" class="logo-image">
+      </div>
       <div class="content">
         <router-outlet></router-outlet>
       </div>
@@ -47,26 +45,14 @@ import { UserService } from '../services/user.service';
       box-sizing: border-box;
     }
 
-    .main-header {
-      background: linear-gradient(180deg, #5BBBB3 0%, #80CBC7 100%);
-      color: white;
-      padding: 24px 16px;
-      border-radius: 12px;
+    .logo-container {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
-    .main-header h1 {
-      margin: 0;
-      font-size: clamp(18px, 5vw, 24px);
-      font-weight: 600;
-      word-break: keep-all;
-    }
-
-    .main-header p {
-      margin: 8px 0 0;
-      font-size: clamp(14px, 4vw, 16px);
-      opacity: 0.9;
+    .logo-image {
+      max-width: 150px;
+      height: auto;
     }
 
     .content {
