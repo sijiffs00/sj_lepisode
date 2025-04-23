@@ -11,7 +11,7 @@ interface Company {
 interface UserData {
   id: string;
   name: string;
-  company: any;           // JSON 타입
+  companies: { name: string } | null;  // companies 테이블에서 가져온 데이터
   company_id: string;     // UUID 타입
   department: string;     // 직위/직책
   position: string;       // 직급
@@ -33,7 +33,6 @@ interface User {
   email: string;         // 이메일
   registered_at: string; // 가입일
   joined_at: string;     // 등록일
-  status: string;        // 상태 (auth_status + company_approval 조합)
 }
 
 @Component({
@@ -64,7 +63,6 @@ interface User {
             <th>이메일</th>
             <th>가입일</th>
             <th>등록일</th>
-            <th>상태</th>
           </tr>
         </thead>
         <tbody>
@@ -77,11 +75,6 @@ interface User {
             <td>{{ user.email }}</td>
             <td>{{ user.registered_at | date:'yyyy-MM-dd' }}</td>
             <td>{{ user.joined_at | date:'yyyy-MM-dd' }}</td>
-            <td>
-              <span [class]="'status-badge ' + user.status.toLowerCase()">
-                {{ user.status }}
-              </span>
-            </td>
           </tr>
         </tbody>
       </table>
@@ -136,24 +129,6 @@ interface User {
       padding: 20px;
       color: #666;
     }
-    .status-badge {
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .status-badge.active {
-      background-color: #e7f5ed;
-      color: #0d9f4f;
-    }
-    .status-badge.pending {
-      background-color: #fff4e5;
-      color: #ff9800;
-    }
-    .status-badge.inactive {
-      background-color: #feebeb;
-      color: #dc3545;
-    }
   `]
 })
 export class AdminDashMemListComponent implements OnInit {
@@ -180,51 +155,63 @@ export class AdminDashMemListComponent implements OnInit {
       }
 
       // Supabase에서 해당 회사의 사용자 목록 가져오기
-      const { data, error } = await this.supabase
+      const { data: users, error: usersError } = await this.supabase
         .from('users')
         .select(`
           id,
           name,
-          company,
+          company_id,
           department,
           position,
           contact,
           email,
           registered_at,
           joined_at,
-          auth_status,
           company_approval
         `)
-        .eq('company_id', companyId);
+        .eq('company_id', companyId)
+        .eq('company_approval', 'approved');  // 승인된 회원만 조회
 
-      if (error) {
-        throw error;
+      if (usersError) {
+        throw usersError;
       }
 
-      // 데이터 포맷팅
-      this.users = (data || []).map(user => ({
-        ...user,
-        company_name: user.company?.name || '소속 없음',
-        // auth_status와 company_approval 상태를 조합하여 표시
-        status: this.getStatusDisplay(user.auth_status, user.company_approval)
+      // 각 사용자의 회사 이름 조회
+      const usersWithCompany = await Promise.all((users || []).map(async (user) => {
+        if (!user.company_id) {
+          return {
+            ...user,
+            company_name: '소속 없음'
+          };
+        }
+
+        const { data: companyData, error: companyError } = await this.supabase
+          .from('companies')
+          .select('name')
+          .eq('id', user.company_id)
+          .single();
+
+        if (companyError) {
+          console.error('회사 정보 조회 중 오류:', companyError);
+          return {
+            ...user,
+            company_name: '소속 없음'
+          };
+        }
+
+        return {
+          ...user,
+          company_name: companyData?.name || '소속 없음'
+        };
       }));
+
+      this.users = usersWithCompany;
       
     } catch (err) {
       console.error('사용자 목록 조회 중 오류 발생:', err);
       this.error = '사용자 목록을 불러오는 중 오류가 발생했습니다.';
     } finally {
       this.isLoading = false;
-    }
-  }
-
-  // 상태 표시 텍스트 생성
-  private getStatusDisplay(authStatus: string, companyApproval: string): string {
-    if (authStatus === 'verified' && companyApproval === 'approved') {
-      return 'active';
-    } else if (authStatus === 'verified' && companyApproval === 'pending') {
-      return 'pending';
-    } else {
-      return 'inactive';
     }
   }
 } 
