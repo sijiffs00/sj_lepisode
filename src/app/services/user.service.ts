@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
+import { supabase } from '../supabase';
 
 declare const Kakao: any;
 
@@ -38,6 +39,40 @@ export class UserService {
       this.router.navigate(['/login']);
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
+      throw error;
+    }
+  }
+
+  async deleteAccount() {
+    try {
+      const userId = this.getUserId();
+      if (!userId) {
+        throw new Error('사용자 ID를 찾을 수 없습니다.');
+      }
+
+      // 1. 카카오 연동 해제
+      if (Kakao.Auth.getAccessToken()) {
+        await Kakao.API.request({
+          url: '/v1/user/unlink'
+        });
+      }
+
+      // 2. Supabase에서 사용자 데이터 삭제
+      const { error: userError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (userError) throw userError;
+
+      // 3. 로컬 상태 초기화
+      this.userIdSubject.next(null);
+
+      // 4. 로그인 페이지로 리다이렉트
+      this.router.navigate(['/login']);
+
+    } catch (error) {
+      console.error('회원탈퇴 중 오류 발생:', error);
       throw error;
     }
   }

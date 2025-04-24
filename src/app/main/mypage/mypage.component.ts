@@ -124,12 +124,28 @@ interface CompanyInfo {
         로그아웃
       </button>
 
+      <button class="delete-account-button" (click)="confirmDeleteAccount()">
+        회원탈퇴
+      </button>
+
       <div class="loading" *ngIf="isLoading">
         정보를 불러오는 중...
       </div>
 
       <div class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
+      </div>
+
+      <!-- 탈퇴 확인 모달 -->
+      <div class="modal" *ngIf="showDeleteConfirm">
+        <div class="modal-content">
+          <h2>회원탈퇴 확인</h2>
+          <p>정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+          <div class="modal-buttons">
+            <button class="cancel-button" (click)="showDeleteConfirm = false">취소</button>
+            <button class="confirm-button" (click)="deleteAccount()">탈퇴하기</button>
+          </div>
+        </div>
       </div>
     </div>
   `,
@@ -377,6 +393,24 @@ interface CompanyInfo {
       background: #F5F5F5;
     }
 
+    .delete-account-button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #FF5252;
+      border-radius: 8px;
+      background: transparent;
+      color: #FF5252;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .delete-account-button:hover {
+      background: #FF5252;
+      color: white;
+    }
+
     .loading {
       text-align: center;
       padding: 20px;
@@ -387,6 +421,62 @@ interface CompanyInfo {
       color: #f44336;
       text-align: center;
       padding: 20px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-content h2 {
+      margin: 0 0 16px 0;
+      color: #333;
+    }
+
+    .modal-content p {
+      margin: 0 0 24px 0;
+      color: #666;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .cancel-button {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #666;
+      border-radius: 8px;
+      background: transparent;
+      color: #666;
+      cursor: pointer;
+    }
+
+    .confirm-button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #FF5252;
+      color: white;
+      cursor: pointer;
     }
 
     /* 다크모드 대응 */
@@ -434,6 +524,15 @@ interface CompanyInfo {
       .logout-button:hover {
         background: #444;
       }
+
+      .delete-account-button {
+        background: #333;
+        color: #fff;
+      }
+
+      .delete-account-button:hover {
+        background: #444;
+      }
     }
   `]
 })
@@ -443,6 +542,7 @@ export class MyPageComponent implements OnInit {
   companyInfo: CompanyInfo | null = null;
   isLoading = false;
   errorMessage = '';
+  showDeleteConfirm = false;
 
   constructor(
     private userService: UserService,
@@ -519,6 +619,24 @@ export class MyPageComponent implements OnInit {
     } catch (error) {
       console.error('로그아웃 중 오류 발생:', error);
       this.errorMessage = '로그아웃 중 오류가 발생했습니다.';
+    }
+  }
+
+  confirmDeleteAccount() {
+    this.showDeleteConfirm = true;
+  }
+
+  async deleteAccount() {
+    try {
+      this.isLoading = true;
+      this.errorMessage = '';
+      await this.userService.deleteAccount();
+    } catch (error) {
+      console.error('회원탈퇴 중 오류 발생:', error);
+      this.errorMessage = '회원탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+    } finally {
+      this.isLoading = false;
+      this.showDeleteConfirm = false;
     }
   }
 } 
