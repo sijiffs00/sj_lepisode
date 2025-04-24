@@ -12,6 +12,7 @@ export interface Company {
   approval_status?: string;
   created_at?: string;
   members?: any[]; // 회원 정보를 담는 배열
+  memberCount?: number; // 구성원 수를 저장할 필드 추가
 }
 
 export interface CompanyResponse {
@@ -42,10 +43,29 @@ export class CompanyService {
         return company;
       });
       
+      // 각 회사의 구성원 수 가져오기
+      for (const company of companies) {
+        try {
+          company.memberCount = await this.supabaseService.getCompanyMembersCount(company.id);
+        } catch (e) {
+          console.error(`${company.name}의 구성원 수 가져오기 에러:`, e);
+          company.memberCount = 0;
+        }
+      }
+      
       return { data: companies, error: null };
     } catch (error) {
       console.error('회사 데이터 로딩 에러:', error);
       return { data: null, error };
+    }
+  }
+  
+  async getCompanyMembersCount(companyId: string): Promise<number> {
+    try {
+      return await this.supabaseService.getCompanyMembersCount(companyId);
+    } catch (error) {
+      console.error('구성원 수 가져오기 에러:', error);
+      return 0;
     }
   }
 } 

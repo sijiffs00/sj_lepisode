@@ -25,4 +25,14 @@ export class SupabaseService {
     if (error) throw error;
     return data;
   }
+  
+  async getCompanyMembersCount(companyId: string) {
+    const { count, error } = await this.supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', companyId);
+      
+    if (error) throw error;
+    return count || 0;
+  }
 } 

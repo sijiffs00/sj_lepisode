@@ -42,22 +42,28 @@ declare global {
         </div>
         <div class="bottom-sheet-content" (click)="$event.stopPropagation()">
           <div class="company-list">
-            <div *ngFor="let company of companies" class="company-item" (click)="selectCompany(company)">
-              <div class="company-logo">
-                <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
-                <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
-              </div>
-              <div class="company-info">
-                <h4>{{ company.name }}</h4>
-                <div class="company-details">
-                  <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
-                  <p class="company-contact" *ngIf="getCompanyPhone(company)">
-                    <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
-                  </p>
-                  <p class="company-address">
-                    <span class="address-icon">📍</span> {{ company.address }}
-                  </p>
+            <div *ngFor="let company of companies" class="company-wrapper">
+              <div class="company-item" (click)="selectCompany(company, $event)">
+                <div class="company-logo">
+                  <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
+                  <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
                 </div>
+                <div class="company-info">
+                  <h4>{{ company.name }}</h4>
+                  <div class="company-details">
+                    <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
+                    <p class="company-contact" *ngIf="getCompanyPhone(company)">
+                      <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
+                    </p>
+                    <p class="company-address">
+                      <span class="address-icon">📍</span> {{ company.address }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <!-- 구성원 정보 표시 라인 -->
+              <div class="member-section">
+                <p class="company-members">구성원<span class="member-count">({{ company.memberCount || 0 }})</span></p>
               </div>
             </div>
           </div>
@@ -214,16 +220,22 @@ declare global {
       padding: 0 16px 80px 16px; /* 좌우 패딩 추가 및 하단 여백 유지 */
     }
 
+    .company-wrapper {
+      margin-bottom: 12px;
+    }
+
     .company-item {
       padding: 16px;
       background: #fff;
-      border-radius: 12px;
+      border-radius: 12px 12px 0 0;
       cursor: pointer;
       transition: background-color 0.2s;
       display: flex;
       gap: 16px;
       align-items: center;
       border: 1px solid #eee;
+      margin-bottom: 0;
+      border-bottom: none;
     }
 
     .company-item:hover {
@@ -303,6 +315,22 @@ declare global {
       color: #777;
     }
 
+    .company-contact, 
+    .company-address,
+    .company-type {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #666;
+      display: flex;
+      align-items: center;
+    }
+
+    .contact-icon, 
+    .address-icon {
+      margin-right: 6px;
+      font-size: 16px;
+    }
+
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
       .bottom-sheet {
@@ -324,6 +352,19 @@ declare global {
 
       .company-item:hover {
         background: #404040;
+      }
+      
+      .member-section {
+        background: #2a2a2a;
+        border-color: #444;
+      }
+      
+      .company-members {
+        color: #ccc;
+      }
+      
+      .member-count {
+        color: #6aafd2;
       }
 
       .company-info h4 {
@@ -367,6 +408,30 @@ declare global {
       font-size: 14px;
       color: #666;
       margin-left: 4px;
+    }
+
+    /* 구성원 섹션 스타일 */
+    .member-section {
+      background: #f8f8f8;
+      padding: 12px 16px;
+      border: 1px solid #eee;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 12px;
+    }
+
+    .company-members {
+      display: flex;
+      font-size: 15px;
+      color: #333;
+      margin: 0;
+      font-weight: normal;
+    }
+
+    .member-count {
+      color: #4B96B4;
+      margin-left: 4px;
+      font-weight: bold;
     }
   `]
 })
@@ -542,7 +607,8 @@ export class CompaniesComponent implements OnInit {
     this.bottomSheetPosition = this.isBottomSheetExpanded ? this.SNAP_TOP : this.SNAP_BOTTOM - 80;
   }
 
-  selectCompany(company: Company) {
+  selectCompany(company: Company, event: Event) {
+    event.stopPropagation(); // 이벤트 버블링 중지
     // 회사 선택 시 해당 위치로 지도 이동
     this.geocoder.addressSearch(company.address, (result: any[], status: any) => {
       if (status === window.kakao.maps.services.Status.OK) {
