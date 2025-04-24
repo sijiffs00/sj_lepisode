@@ -17,6 +17,7 @@ import { SearchComponent } from './main/search/search.component';
 import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
 import { CompaniesComponent } from './main/companies/companies.component';
+import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { CompanyService } from './services/company.service';
 import { SupabaseService } from './services/supabase.service';
@@ -32,6 +33,7 @@ import { UpdateComponent } from './pages/update/update.component';
     MembersComponent,
     OrganizationComponent,
     CompaniesComponent,
+    CompanyDetailComponent,
     MyPageComponent,
     UpdateComponent
   ],

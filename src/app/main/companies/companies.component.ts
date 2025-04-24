@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { CompanyService, Company, CompanyResponse } from '../../services/company.service';
+import { CompanyService, Company, CompanyResponse, CompanyMember } from '../../services/company.service';
 
 declare global {
   interface Window {
@@ -61,9 +62,35 @@ declare global {
                   </div>
                 </div>
               </div>
-              <!-- 구성원 정보 표시 라인 -->
-              <div class="member-section">
+              <!-- 구성원 정보 섹션 -->
+              <div class="member-section" (click)="$event.stopPropagation()">
                 <p class="company-members">구성원<span class="member-count">({{ company.memberCount || 0 }})</span></p>
+                
+                <!-- 구성원 목록 - 선택된 기업에만 표시 -->
+                <div class="members-container" *ngIf="selectedCompanyId === company.id">
+                  <!-- 로딩 중 표시 -->
+                  <div *ngIf="isLoadingMembers" class="loading">
+                    구성원 정보를 불러오는 중...
+                  </div>
+                  
+                  <!-- 구성원 목록 -->
+                  <div class="members-list" *ngIf="!isLoadingMembers">
+                    <div *ngFor="let member of companyMembers" class="member-card">
+                      <p class="member-name">{{ member.name }} <span class="position">{{ member.position }}</span></p>
+                      <p class="member-phone">
+                        <span class="icon">📞</span> {{ member.phone }}
+                      </p>
+                      <p class="member-email">
+                        <span class="icon">📧</span> {{ member.email }}
+                      </p>
+                    </div>
+                    
+                    <!-- 데이터 없을 때 -->
+                    <div *ngIf="companyMembers.length === 0" class="no-members">
+                      등록된 구성원이 없습니다.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -181,6 +208,7 @@ declare global {
 
     .bottom-sheet.expanded {
       transform: translateY(0) !important;
+      height: 85vh; /* 확장 시 높이 증가 */
     }
 
     .bottom-sheet-header {
@@ -211,6 +239,10 @@ declare global {
       height: calc(45vh - 60px); /* 헤더 높이 제외, 60vh에서 45vh로 변경 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .expanded .bottom-sheet-content {
+      height: calc(85vh - 60px); /* 확장 시 높이 조정 */
     }
 
     .company-list {
@@ -331,6 +363,84 @@ declare global {
       font-size: 16px;
     }
 
+    /* 구성원 섹션 스타일 */
+    .member-section {
+      background: #f8f8f8;
+      padding: 12px 16px;
+      border: 1px solid #eee;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      cursor: default;
+    }
+
+    .company-members {
+      display: flex;
+      font-size: 15px;
+      color: #333;
+      margin: 0;
+      font-weight: normal;
+    }
+
+    .member-count {
+      color: #4B96B4;
+      margin-left: 4px;
+      font-weight: bold;
+    }
+    
+    /* 구성원 목록 컨테이너 */
+    .members-container {
+      margin-top: 12px;
+    }
+
+    /* 구성원 목록 스타일 */
+    .members-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .member-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .member-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #333;
+    }
+
+    .position {
+      font-weight: normal;
+      color: #666;
+      margin-left: 6px;
+    }
+
+    .member-phone, .member-email {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .icon {
+      font-size: 16px;
+    }
+
+    .no-members, .loading {
+      padding: 16px;
+      text-align: center;
+      color: #666;
+      background: white;
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
       .bottom-sheet {
@@ -395,6 +505,28 @@ declare global {
       .close-button:hover {
         background-color: rgba(255, 255, 255, 0.1);
       }
+      
+      .member-card {
+        background: #333;
+        border-color: #444;
+      }
+      
+      .member-name {
+        color: #fff;
+      }
+      
+      .position {
+        color: #aaa;
+      }
+      
+      .member-phone, .member-email {
+        color: #ccc;
+      }
+      
+      .no-members, .loading {
+        background: #333;
+        color: #ccc;
+      }
     }
 
     /* iOS Safari 대응 */
@@ -409,30 +541,6 @@ declare global {
       color: #666;
       margin-left: 4px;
     }
-
-    /* 구성원 섹션 스타일 */
-    .member-section {
-      background: #f8f8f8;
-      padding: 12px 16px;
-      border: 1px solid #eee;
-      border-top: none;
-      border-radius: 0 0 12px 12px;
-      margin-bottom: 12px;
-    }
-
-    .company-members {
-      display: flex;
-      font-size: 15px;
-      color: #333;
-      margin: 0;
-      font-weight: normal;
-    }
-
-    .member-count {
-      color: #4B96B4;
-      margin-left: 4px;
-      font-weight: bold;
-    }
   `]
 })
 export class CompaniesComponent implements OnInit {
@@ -440,6 +548,11 @@ export class CompaniesComponent implements OnInit {
   private map: any;
   private geocoder: any;
   isBottomSheetExpanded = false;
+  
+  // 선택된 회사와 구성원 정보
+  selectedCompanyId: string | null = null;
+  companyMembers: CompanyMember[] = [];
+  isLoadingMembers = false;
   
   // 드래그 관련 변수들
   private touchStartY = 0;
@@ -449,7 +562,10 @@ export class CompaniesComponent implements OnInit {
   private readonly SNAP_TOP = 0;
   private readonly SNAP_BOTTOM = window.innerHeight - 200;
 
-  constructor(private companyService: CompanyService) {
+  constructor(
+    private companyService: CompanyService,
+    private router: Router
+  ) {
     // 초기 바텀시트 위치 설정
     this.bottomSheetPosition = this.SNAP_BOTTOM - 80;
   }
@@ -609,7 +725,29 @@ export class CompaniesComponent implements OnInit {
 
   selectCompany(company: Company, event: Event) {
     event.stopPropagation(); // 이벤트 버블링 중지
-    // 회사 선택 시 해당 위치로 지도 이동
+    
+    // 이미 선택된 회사라면 접기/펼치기 토글
+    if (this.selectedCompanyId === company.id) {
+      this.selectedCompanyId = null;
+      this.companyMembers = [];
+      return;
+    }
+    
+    // 선택된 회사로 지도 이동하기
+    this.moveMapToCompany(company);
+    
+    // 선택된 회사 설정 및 구성원 데이터 로드
+    this.selectedCompanyId = company.id;
+    this.loadCompanyMembers(company.id);
+    
+    // 바텀시트가 닫혀있으면 열기
+    if (!this.isBottomSheetExpanded) {
+      this.isBottomSheetExpanded = true;
+      this.bottomSheetPosition = this.SNAP_TOP;
+    }
+  }
+  
+  moveMapToCompany(company: Company) {
     this.geocoder.addressSearch(company.address, (result: any[], status: any) => {
       if (status === window.kakao.maps.services.Status.OK) {
         const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
@@ -617,6 +755,22 @@ export class CompaniesComponent implements OnInit {
         this.map.setLevel(3); // 지도 확대
       }
     });
+  }
+  
+  async loadCompanyMembers(companyId: string) {
+    this.isLoadingMembers = true;
+    this.companyMembers = [];
+    
+    try {
+      const response = await this.companyService.getCompanyMembers(companyId);
+      if (response.error) throw response.error;
+      
+      this.companyMembers = response.data || [];
+    } catch (error) {
+      console.error('구성원 데이터 로딩 중 에러:', error);
+    } finally {
+      this.isLoadingMembers = false;
+    }
   }
 
   // 목록 버튼 클릭 시 바텀시트 열기

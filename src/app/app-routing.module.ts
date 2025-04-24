@@ -9,6 +9,7 @@ import { SearchComponent } from './main/search/search.component';
 import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
 import { CompaniesComponent } from './main/companies/companies.component';
+import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { UpdateComponent } from './pages/update/update.component';
 
@@ -24,6 +25,7 @@ const routes: Routes = [
       { path: 'members', component: MembersComponent },
       { path: 'org', component: OrganizationComponent },
       { path: 'companies', component: CompaniesComponent },
+      { path: 'companies/:id', component: CompanyDetailComponent },  // 기업 상세 페이지 라우트 추가
       { path: 'mypage', component: MyPageComponent }
     ]
   },

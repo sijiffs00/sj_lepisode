@@ -26,6 +26,17 @@ export class SupabaseService {
     return data;
   }
   
+  async getCompanyById(companyId: string) {
+    const { data, error } = await this.supabase
+      .from('companies')
+      .select('*')
+      .eq('id', companyId)
+      .single();
+      
+    if (error) throw error;
+    return data;
+  }
+  
   async getCompanyMembersCount(companyId: string) {
     const { count, error } = await this.supabase
       .from('users')
@@ -34,5 +45,15 @@ export class SupabaseService {
       
     if (error) throw error;
     return count || 0;
+  }
+  
+  async getCompanyMembers(companyId: string) {
+    const { data, error } = await this.supabase
+      .from('users')
+      .select('id, name, position, contact, email, company_id, department')
+      .eq('company_id', companyId);
+      
+    if (error) throw error;
+    return data;
   }
 } 
