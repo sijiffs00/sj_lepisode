@@ -43,8 +43,22 @@ declare global {
         <div class="bottom-sheet-content" (click)="$event.stopPropagation()">
           <div class="company-list">
             <div *ngFor="let company of companies" class="company-item" (click)="selectCompany(company)">
-              <h4>{{ company.name }}</h4>
-              <p>{{ company.address }}</p>
+              <div class="company-logo">
+                <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
+                <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
+              </div>
+              <div class="company-info">
+                <h4>{{ company.name }}</h4>
+                <div class="company-details">
+                  <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
+                  <p class="company-contact" *ngIf="getCompanyPhone(company)">
+                    <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
+                  </p>
+                  <p class="company-address">
+                    <span class="address-icon">📍</span> {{ company.address }}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -197,31 +211,96 @@ declare global {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding-bottom: 80px; /* 하단 여백 추가 */
+      padding: 0 16px 80px 16px; /* 좌우 패딩 추가 및 하단 여백 유지 */
     }
 
     .company-item {
       padding: 16px;
-      background: #f8f8f8;
+      background: #fff;
       border-radius: 12px;
       cursor: pointer;
       transition: background-color 0.2s;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid #eee;
     }
 
     .company-item:hover {
-      background: #f0f0f0;
+      background: #f9f9f9;
     }
 
-    .company-item h4 {
-      margin: 0 0 8px 0;
-      font-size: 16px;
+    .company-logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f1f1;
+      border: 1px solid #e0e0e0;
+    }
+
+    .company-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .placeholder-logo {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e1e1e1;
+      color: #555;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .company-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .company-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
       color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .company-item p {
+    .company-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .company-details p {
       margin: 0;
-      font-size: 14px;
+      font-size: 13px;
       color: #666;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.4;
+    }
+
+    .company-type {
+      font-weight: 500;
+      color: #888 !important;
+      margin-bottom: 2px !important;
+    }
+
+    .contact-icon, .address-icon {
+      font-size: 16px;
+      color: #777;
     }
 
     /* 다크모드 대응 */
@@ -240,18 +319,28 @@ declare global {
 
       .company-item {
         background: #333;
+        border-color: #444;
       }
 
       .company-item:hover {
         background: #404040;
       }
 
-      .company-item h4 {
+      .company-info h4 {
         color: #fff;
       }
 
-      .company-item p {
+      .company-details p {
         color: #ccc;
+      }
+
+      .company-type {
+        color: #6aafd2 !important;
+      }
+
+      .placeholder-logo {
+        background: #444;
+        color: #ddd;
       }
 
       .company-count {
@@ -469,5 +558,32 @@ export class CompaniesComponent implements OnInit {
     event.stopPropagation(); // 이벤트 전파 중단
     this.isBottomSheetExpanded = true;
     this.bottomSheetPosition = this.SNAP_TOP;
+  }
+
+  // 회사 연락처 정보 가져오기 (members 필드에서 추출)
+  getCompanyPhone(company: Company): string {
+    if (!company.members || !Array.isArray(company.members) || company.members.length === 0) {
+      // 임시 번호 생성 (실제 서비스에서는 제거)
+      return `12-345-12345`;
+    }
+    
+    try {
+      // members 배열에서 연락처 정보 찾기
+      for (const memberEntry of company.members) {
+        // member_info 객체 확인
+        if (memberEntry.member_info) {
+          // contact 정보가 있는지 확인
+          if (memberEntry.member_info.contact && memberEntry.member_info.contact.phone) {
+            return memberEntry.member_info.contact.phone;
+          }
+        }
+      }
+      
+      // 연락처가 없으면 기본 번호 반환
+      return `12-345-12345`;
+    } catch (error) {
+      console.error('전화번호 추출 에러:', error);
+      return `12-345-12345`;
+    }
   }
 } 
