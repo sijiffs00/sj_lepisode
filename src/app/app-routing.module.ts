@@ -8,6 +8,7 @@ import { RegisterComponent } from './register/register.component';
 import { SearchComponent } from './main/search/search.component';
 import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
+import { OrganizationDetailComponent } from './main/organization/organization-detail.component';
 import { CompaniesComponent } from './main/companies/companies.component';
 import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
@@ -24,6 +25,7 @@ const routes: Routes = [
       { path: 'search', component: SearchComponent },
       { path: 'members', component: MembersComponent },
       { path: 'org', component: OrganizationComponent },
+      { path: 'org/detail', component: OrganizationDetailComponent },  // 조직도 상세 페이지 라우트 추가
       { path: 'companies', component: CompaniesComponent },
       { path: 'companies/:id', component: CompanyDetailComponent },  // 기업 상세 페이지 라우트 추가
       { path: 'mypage', component: MyPageComponent }

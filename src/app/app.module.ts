@@ -16,6 +16,7 @@ import { AdminModule } from './admin/admin.module';
 import { SearchComponent } from './main/search/search.component';
 import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
+import { OrganizationDetailComponent } from './main/organization/organization-detail.component';
 import { CompaniesComponent } from './main/companies/companies.component';
 import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
@@ -33,6 +34,7 @@ import { DataExampleComponent } from './components/data-example/data-example.com
     SearchComponent,
     MembersComponent,
     OrganizationComponent,
+    OrganizationDetailComponent,
     CompaniesComponent,
     CompanyDetailComponent,
     MyPageComponent,

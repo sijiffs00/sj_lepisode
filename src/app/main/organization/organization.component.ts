@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-organization',
@@ -10,19 +11,19 @@ import { Component } from '@angular/core';
       </div>
       
       <div class="org-list">
-        <button class="org-item">
+        <button class="org-item" (click)="navigateToDetail('chairman')">
           <div class="org-icon"></div>
           <span>회장</span>
           <div class="arrow-icon"></div>
         </button>
 
-        <button class="org-item">
+        <button class="org-item" (click)="navigateToDetail('advisors')">
           <div class="org-icon"></div>
           <span>자문위원</span>
           <div class="arrow-icon"></div>
         </button>
 
-        <button class="org-item">
+        <button class="org-item" (click)="navigateToDetail('directors')">
           <div class="org-icon"></div>
           <span>이사회/고문</span>
           <div class="arrow-icon"></div>
@@ -139,4 +140,12 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class OrganizationComponent {} 
+export class OrganizationComponent {
+  constructor(private router: Router) {}
+  
+  navigateToDetail(tab: string) {
+    this.router.navigate(['/main/org/detail'], { 
+      queryParams: { tab } 
+    });
+  }
+} 
