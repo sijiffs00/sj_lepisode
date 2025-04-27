@@ -13,6 +13,7 @@ interface CompanyInfo {
   address: string;
   members: any[];
   approval_status: string;
+  memberCount?: number;
 }
 
 @Component({
@@ -113,7 +114,7 @@ interface CompanyInfo {
               <span class="label">구성원</span>
             </div>
             <div class="value">
-              {{ companyInfo.members?.length || 0 }}명
+              {{ companyInfo.memberCount || 0 }}명
               <button class="view-members-button">목록으로</button>
             </div>
           </div>
@@ -604,6 +605,19 @@ export class MyPageComponent implements OnInit {
 
         if (companyError) throw companyError;
         this.companyInfo = companyData;
+        
+        // 실제 구성원 수 가져오기
+        const { count, error: countError } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true })
+          .eq('company_id', userData.company_id);
+          
+        if (!countError) {
+          // 회사 정보에 실제 구성원 수 업데이트
+          if (this.companyInfo) {
+            this.companyInfo.memberCount = count || 0;
+          }
+        }
       }
 
       console.log('사용자 정보 로드됨:', this.userInfo);
