@@ -1,0 +1,84 @@
+# 데이터베이스 ERD (Entity Relationship Diagram)
+
+## 테이블 구조
+
+### 1. users 테이블
+| 컬럼명 | 데이터 타입 | NULL 가능 | 기본값 | 설명 |
+|--------|------------|-----------|-------|------|
+| id | bigint | NO | - | 기본키(PK) |
+| name | text | YES | - | 사용자 이름 |
+| joined_at | timestamp | YES | now() | 가입일 |
+| registered_at | timestamp | YES | now() | 등록일 |
+| auth_status | text | YES | - | 인증 상태 |
+| company_approval | text | YES | - | 회사 승인 상태 |
+| department | text | YES | - | 부서 |
+| position | text | YES | - | 직책 |
+| contact | text | YES | - | 연락처 |
+| email | text | YES | - | 이메일 |
+| association_role | text | YES | - | 조직 내 역할 |
+| org_chart_id | text | YES | - | 조직도 ID |
+| company_id | uuid | YES | - | 회사 ID (FK → companies.id) |
+| company | json | YES | - | 회사 정보 (JSON 형태) |
+
+### 2. companies 테이블
+| 컬럼명 | 데이터 타입 | NULL 가능 | 기본값 | 설명 |
+|--------|------------|-----------|-------|------|
+| id | uuid | NO | gen_random_uuid() | 기본키(PK) |
+| ceo_name | text | YES | - | CEO 이름 |
+| logo_url | text | YES | - | 로고 URL |
+| name | text | YES | - | 회사명 |
+| industry | text | YES | - | 산업 분야 |
+| address | text | YES | - | 주소 |
+| homepage_url | text | YES | - | 홈페이지 URL |
+| approval_status | text | YES | - | 승인 상태 |
+| created_at | timestamp | YES | CURRENT_TIMESTAMP | 생성일 |
+| members | jsonb | YES | '[]'::jsonb | 구성원 목록 (JSON 배열) |
+
+### 3. admins 테이블
+| 컬럼명 | 데이터 타입 | NULL 가능 | 기본값 | 설명 |
+|--------|------------|-----------|-------|------|
+| id | uuid | NO | gen_random_uuid() | 기본키(PK) |
+| admin_id | character varying | YES | - | 관리자 ID |
+| manager_name | character varying | YES | - | 관리자 이름 |
+| secret_number | character varying | YES | - | 비밀번호 |
+| role | character varying | YES | - | 역할 |
+| company_id | uuid | YES | - | 회사 ID (FK → companies.id) |
+| created_at | timestamp | YES | CURRENT_TIMESTAMP | 생성일 |
+| updated_at | timestamp | YES | CURRENT_TIMESTAMP | 수정일 |
+| admin_logs | jsonb | YES | '[]'::jsonb | 관리자 로그 (JSON 배열) |
+
+## 관계 (Relationships)
+
+1. **users 테이블** → **companies 테이블**
+   - users.company_id → companies.id (다대일 관계)
+   - 한 회사는 여러 사용자를 가질 수 있음
+
+2. **admins 테이블** → **companies 테이블**
+   - admins.company_id → companies.id (다대일 관계)
+   - 한 회사는 여러 관리자를 가질 수 있음
+
+## ERD 다이어그램 (텍스트 형식)
+
+```
++---------------+       +---------------+       +---------------+
+|    users      |       |   companies   |       |    admins     |
++---------------+       +---------------+       +---------------+
+| id (PK)       |       | id (PK)       |       | id (PK)       |
+| name          |       | ceo_name      |       | admin_id      |
+| joined_at     |       | logo_url      |       | manager_name  |
+| registered_at |       | name          |       | secret_number |
+| auth_status   |       | industry      |       | role          |
+| company_appr..|  +--> | address       |  <-+  | company_id(FK)|
+| department    |  |    | homepage_url  |    |  | created_at    |
+| position      |  |    | approval_stat.|    |  | updated_at    |
+| contact       |  |    | created_at    |    |  | admin_logs    |
+| email         |  |    | members       |    |  +---------------+
+| assoc_role    |  |    +---------------+    |
+| org_chart_id  |  |                         |
+| company_id(FK)+-+                         |
+| company       |                           |
++---------------+                           |
+                                            |
+                                            |
+         users.company_id ------------------>
+         admins.company_id -----------------+

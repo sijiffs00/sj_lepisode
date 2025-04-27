@@ -238,7 +238,7 @@ export class RegisterComponent implements OnInit {
             contact: this.contact,
             email: this.email,
             auth_status: 'pending',      // 인증 상태 추가
-            company_approval: 'pending'   // 기업 승인 상태 추가
+            company_approved: 'pending'   // 기업 승인 상태 추가 (company_approval에서 수정)
           }
         ])
         .select()

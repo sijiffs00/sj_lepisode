@@ -10,9 +10,13 @@ export class SupabaseService {
 
   constructor() {
     this.supabase = createClient(
-      environment.supabaseUrl,
-      environment.supabaseAnonKey
+      environment.supabaseUrl,  // 환경 변수에서 URL 가져오기
+      environment.supabaseAnonKey  // 환경 변수에서 키 가져오기
     );
+  }
+
+  get supabaseClient(): SupabaseClient {
+    return this.supabase;
   }
 
   async getCompanies() {
@@ -54,6 +58,19 @@ export class SupabaseService {
       .eq('company_id', companyId);
       
     if (error) throw error;
+    return data;
+  }
+
+  async getItems() {
+    const { data, error } = await this.supabase
+      .from('items')
+      .select('*');
+    
+    if (error) {
+      console.error('데이터 가져오기 오류:', error);
+      return null;
+    }
+    
     return data;
   }
 } 

@@ -22,6 +22,7 @@ import { MyPageComponent } from './main/mypage/mypage.component';
 import { CompanyService } from './services/company.service';
 import { SupabaseService } from './services/supabase.service';
 import { UpdateComponent } from './pages/update/update.component';
+import { DataExampleComponent } from './components/data-example/data-example.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { UpdateComponent } from './pages/update/update.component';
     CompaniesComponent,
     CompanyDetailComponent,
     MyPageComponent,
-    UpdateComponent
+    UpdateComponent,
+    DataExampleComponent
   ],
   imports: [
     BrowserModule,
