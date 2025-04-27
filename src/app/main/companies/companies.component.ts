@@ -203,7 +203,7 @@ declare global {
       transition: transform 0.2s ease-out;
       z-index: 1000;
       touch-action: none;
-      height: 45vh; /* 60vh에서 45vh로 변경 */
+      height: 60vh; /* 45vh에서 60vh로 변경 */
     }
 
     .bottom-sheet.expanded {
@@ -236,7 +236,7 @@ declare global {
     }
 
     .bottom-sheet-content {
-      height: calc(45vh - 60px); /* 헤더 높이 제외, 60vh에서 45vh로 변경 */
+      height: calc(60vh - 60px); /* 헤더 높이 제외, 45vh에서 60vh로 변경 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -776,8 +776,10 @@ export class CompaniesComponent implements OnInit {
   // 목록 버튼 클릭 시 바텀시트 열기
   openBottomSheet(event: Event) {
     event.stopPropagation(); // 이벤트 전파 중단
-    this.isBottomSheetExpanded = true;
-    this.bottomSheetPosition = this.SNAP_TOP;
+    this.isBottomSheetExpanded = false; // 완전히 펼치지 않음
+    // 화면 높이의 60% 위치로 설정 (SNAP_BOTTOM에서 화면 높이의 60%만큼 위로)
+    const screenHeight = window.innerHeight;
+    this.bottomSheetPosition = this.SNAP_BOTTOM - (screenHeight * 0.6);
   }
 
   // 회사 연락처 정보 가져오기 (members 필드에서 추출)

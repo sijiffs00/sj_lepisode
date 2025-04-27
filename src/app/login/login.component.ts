@@ -269,6 +269,8 @@ export class LoginComponent implements OnInit {
         console.log('기존 사용자! /main으로 이동합니다. userInfo.id:', userInfo.id);
         // 사용자 ID를 서비스에 저장하고 main으로 이동
         this.userService.setUserId(userInfo.id!);
+        // 로컬 스토리지에도 저장 (추가)
+        localStorage.setItem('userId', userInfo.id!.toString());
         this.router.navigate(['/main']);
       }
     } catch (error) {

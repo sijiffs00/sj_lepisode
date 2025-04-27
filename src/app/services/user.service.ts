@@ -34,6 +34,8 @@ export class UserService {
       
       // 로컬 사용자 정보 삭제
       this.userIdSubject.next(null);
+      // 로컬 스토리지에서도 삭제 (추가)
+      localStorage.removeItem('userId');
       
       // 로그인 페이지로 리다이렉트
       this.router.navigate(['/login']);
@@ -43,10 +45,16 @@ export class UserService {
     }
   }
 
-  async deleteAccount() {
+  async deleteAccount(): Promise<void> {
     try {
       const userId = this.getUserId();
       if (!userId) {
+        // 로컬 스토리지에서도 확인 (추가)
+        const storedUserId = localStorage.getItem('userId');
+        if (storedUserId) {
+          this.setUserId(Number(storedUserId));
+          return await this.deleteAccount(); // 다시 시도
+        }
         throw new Error('사용자 ID를 찾을 수 없습니다.');
       }
 
@@ -67,6 +75,8 @@ export class UserService {
 
       // 3. 로컬 상태 초기화
       this.userIdSubject.next(null);
+      // 로컬 스토리지에서도 삭제 (추가)
+      localStorage.removeItem('userId');
 
       // 4. 로그인 페이지로 리다이렉트
       this.router.navigate(['/login']);

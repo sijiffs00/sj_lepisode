@@ -550,9 +550,21 @@ export class MyPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.userId = this.userService.getUserId();
+    // 로컬 스토리지에서 userId 가져오기 (추가)
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      this.userId = Number(storedUserId);
+      this.userService.setUserId(this.userId); // userService에도 userId 설정
+    } else {
+      // userService에서 가져오기
+      this.userId = this.userService.getUserId();
+    }
+    
     if (this.userId) {
       this.loadUserInfo();
+    } else {
+      // userId가 없으면 로그인 페이지로 리다이렉트
+      this.router.navigate(['/login']);
     }
 
     this.userService.userId$.subscribe(id => {
