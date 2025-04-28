@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { supabase } from '../../supabase';
 
 interface CompanySearchResult {
@@ -28,35 +29,51 @@ interface CompanySearchResult {
             placeholder="상호명으로 검색"
             (keyup.enter)="search()"
           >
+          <button *ngIf="searchQuery" class="clear-button" (click)="clearSearch()">
+            <img src="assets/icons/close.svg" alt="지우기" class="close-icon">
+          </button>
           <button class="search-button" (click)="search()">
             <img src="assets/icons/search.svg" alt="검색" class="search-icon">
           </button>
         </div>
       </div>
 
-      <div class="empty-state" *ngIf="!hasSearched">
-        <img src="assets/icons/search-big.svg" alt="검색" class="search-illustration">
-        <p>기업명을 검색해주세요.</p>
-      </div>
-
-      <div class="results" *ngIf="hasSearched">
-        <div class="no-results" *ngIf="searchResults.length === 0">
-          <p>검색 결과가 없습니다.</p>
+      <div class="content-wrapper">
+        <div class="empty-state" *ngIf="!hasSearched">
+          <img src="assets/icons/search-big.svg" alt="검색" class="search-illustration">
+          <p>기업명을 검색해주세요.</p>
         </div>
 
-        <div class="company-list" *ngIf="searchResults.length > 0">
-          <div class="company-item" *ngFor="let company of searchResults">
-            <div class="company-logo">
-              <img [src]="company.logo_url || 'assets/default-company-logo.png'" alt="기업 로고">
-            </div>
-            <div class="company-info">
-              <div class="company-name">{{ company.name }}</div>
-              <div class="company-details">
-                <span class="industry">{{ company.industry || '업종 미입력' }}</span>
-                <span class="address">{{ company.address || '주소 미입력' }}</span>
+        <div class="results" *ngIf="hasSearched">
+          <div class="no-results" *ngIf="searchResults.length === 0">
+            <img src="assets/icons/document.svg" alt="문서" class="no-results-icon">
+            <p class="no-results-text">'{{ searchQuery }}' 검색결과가 없습니다.</p>
+          </div>
+
+          <div class="company-list" *ngIf="searchResults.length > 0">
+            <div class="company-item" *ngFor="let company of searchResults">
+              <div class="company-logo">
+                <img [src]="company.logo_url || 'assets/default-company-logo.png'" alt="기업 로고">
+              </div>
+              <div class="company-info">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="company-details">
+                  <span class="industry">{{ company.industry || '업종 미입력' }}</span>
+                  <span class="address">{{ company.address || '주소 미입력' }}</span>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="bottom-register" *ngIf="searchResults.length === 0 && hasSearched">
+        <div class="register-content">
+          <p class="prompt-text">등록된 기업이 없으신가요?</p>
+          <button class="register-button" (click)="goToRegister()">
+            <span class="plus-icon">+</span>
+            기업 등록
+          </button>
         </div>
       </div>
 
@@ -70,6 +87,14 @@ interface CompanySearchResult {
     .find-company-container {
       background: #FFFFFF;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .content-wrapper {
+      flex: 1;
+      padding-bottom: 80px;
     }
 
     .header {
@@ -176,9 +201,73 @@ interface CompanySearchResult {
     }
 
     .no-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 120px;
       text-align: center;
-      padding: 40px 0;
-      color: #999999;
+    }
+
+    .no-results-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .no-results-text {
+      font-size: 15px;
+      color: #666666;
+      margin: 0;
+    }
+
+    .bottom-register {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #FFFFFF;
+      border-top: 1px solid #EEEEEE;
+      padding: 16px;
+    }
+
+    .register-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 500px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .prompt-text {
+      font-size: 14px;
+      color: #666666;
+      margin: 0;
+    }
+
+    .register-button {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border: 1px solid #5BBBB3;
+      border-radius: 100px;
+      background: #FFFFFF;
+      color: #5BBBB3;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .plus-icon {
+      margin-right: 4px;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    .register-button:hover {
+      background: #F5FFFE;
     }
 
     .company-list {
@@ -272,6 +361,26 @@ interface CompanySearchResult {
       100% { transform: rotate(360deg); }
     }
 
+    .clear-button {
+      position: absolute;
+      right: 48px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-icon {
+      width: 20px;
+      height: 20px;
+      opacity: 0.4;
+    }
+
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
       .find-company-container {
@@ -330,6 +439,16 @@ interface CompanySearchResult {
       .loading p {
         color: #FFFFFF;
       }
+
+      .bottom-register {
+        background: #1A1A1A;
+        border-top-color: #333333;
+      }
+
+      .no-results-text,
+      .prompt-text {
+        color: #999999;
+      }
     }
   `]
 })
@@ -339,8 +458,16 @@ export class FindCompanyComponent {
   isLoading: boolean = false;
   searchResults: CompanySearchResult[] = [];
 
+  constructor(private router: Router) {}
+
   goBack() {
     window.history.back();
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.hasSearched = false;
+    this.searchResults = [];
   }
 
   async search() {
@@ -350,7 +477,6 @@ export class FindCompanyComponent {
       this.isLoading = true;
       this.hasSearched = true;
 
-      // Supabase에서 기업명으로 검색
       const { data, error } = await supabase
         .from('companies')
         .select('id, name, industry, address, logo_url')
@@ -367,5 +493,9 @@ export class FindCompanyComponent {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  goToRegister() {
+    this.router.navigate(['/main/register_company']);
   }
 } 

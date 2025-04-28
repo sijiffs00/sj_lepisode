@@ -29,11 +29,11 @@ const routes: Routes = [
       { path: 'org/detail', component: OrganizationDetailComponent },  // 조직도 상세 페이지 라우트 추가
       { path: 'companies', component: CompaniesComponent },
       { path: 'companies/:id', component: CompanyDetailComponent },  // 기업 상세 페이지 라우트 추가
-      { path: 'mypage', component: MyPageComponent },
-      { path: 'find_company', component: FindCompanyComponent }
+      { path: 'mypage', component: MyPageComponent }
     ]
   },
   { path: 'register', component: RegisterComponent },
+  { path: 'main/find_company', component: FindCompanyComponent },  // 메인 레이아웃 밖으로 이동
   {
     path: 'admin',
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
