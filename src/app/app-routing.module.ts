@@ -13,6 +13,7 @@ import { CompaniesComponent } from './main/companies/companies.component';
 import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { UpdateComponent } from './pages/update/update.component';
+import { FindCompanyComponent } from './main/find-company/find-company.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -28,7 +29,8 @@ const routes: Routes = [
       { path: 'org/detail', component: OrganizationDetailComponent },  // 조직도 상세 페이지 라우트 추가
       { path: 'companies', component: CompaniesComponent },
       { path: 'companies/:id', component: CompanyDetailComponent },  // 기업 상세 페이지 라우트 추가
-      { path: 'mypage', component: MyPageComponent }
+      { path: 'mypage', component: MyPageComponent },
+      { path: 'find_company', component: FindCompanyComponent }
     ]
   },
   { path: 'register', component: RegisterComponent },

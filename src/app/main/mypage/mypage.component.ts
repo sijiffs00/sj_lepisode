@@ -887,8 +887,7 @@ export class MyPageComponent implements OnInit {
   }
 
   registerCompany() {
-    // 기업 정보 등록 페이지로 이동
-    this.router.navigate(['/main/company/register']);
+    this.router.navigate(['/main/find_company']);
   }
 
   leaveCompany() {
