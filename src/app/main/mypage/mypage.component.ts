@@ -65,9 +65,11 @@ interface CompanyInfo {
         </div>
 
         <div class="button-container">
-          <button class="edit-button" (click)="editProfile()">
-            <i class="edit-icon"></i>
-            회원정보 수정
+          <button class="profile-button" (click)="editProfile()">
+            회원 정보 수정
+          </button>
+          <button class="profile-button" (click)="confirmDeleteAccount()">
+            회원 탈퇴
           </button>
         </div>
       </div>
@@ -119,14 +121,21 @@ interface CompanyInfo {
             </div>
           </div>
         </div>
+        <button class="leave-company-button" (click)="leaveCompany()">
+          기업 나가기 >
+        </button>
+      </div>
+
+      <div class="empty-company-card" *ngIf="!companyInfo">
+        <div class="empty-icon">🏢</div>
+        <h3>기업을 등록해주세요</h3>
+        <button class="register-company-button" (click)="registerCompany()">
+          기업등록 >
+        </button>
       </div>
 
       <button class="logout-button" (click)="logout()">
         로그아웃
-      </button>
-
-      <button class="delete-account-button" (click)="confirmDeleteAccount()">
-        회원탈퇴
       </button>
 
       <div class="loading" *ngIf="isLoading">
@@ -145,6 +154,40 @@ interface CompanyInfo {
           <div class="modal-buttons">
             <button class="cancel-button" (click)="showDeleteConfirm = false">취소</button>
             <button class="confirm-button" (click)="deleteAccount()">탈퇴하기</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 기업 나가기 모달 -->
+      <div class="modal leave-company-modal" *ngIf="showLeaveConfirm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="warning-icon">!</div>
+            <h2>기업 나가기</h2>
+          </div>
+
+          <div class="company-info-row">
+            <div class="info-label">이름</div>
+            <div class="info-value">{{ companyInfo?.name }}</div>
+          </div>
+          <div class="company-info-row">
+            <div class="info-label">업종</div>
+            <div class="info-value">{{ companyInfo?.industry || '도소매/엔터/전자상거래' }}</div>
+          </div>
+
+          <p class="warning-text">
+            기업 나가기 시, 기업과의 연결이 끊어지며,<br>
+            이후 복구할 수 없습니다.
+          </p>
+
+          <div class="checkbox-container">
+            <input type="checkbox" id="leaveConfirmCheck" [(ngModel)]="leaveConfirmChecked">
+            <label for="leaveConfirmCheck">기업 나가기 후 복구할 수 없음을 확인하였습니다.</label>
+          </div>
+
+          <div class="modal-buttons">
+            <button class="cancel-button" (click)="showLeaveConfirm = false">취소</button>
+            <button class="leave-button" [disabled]="!leaveConfirmChecked" (click)="confirmLeaveCompany()">나가기</button>
           </div>
         </div>
       </div>
@@ -344,34 +387,29 @@ interface CompanyInfo {
       background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>');
     }
 
-    .edit-button {
-      width: 100%;
-      margin-top: 32px;
-      padding: 16px;
-      border: none;
-      border-radius: 12px;
-      background: #F5F5F5;
-      color: #666;
-      font-size: 16px;
+    .button-container {
+      margin-top: 24px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .profile-button {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid #E0E0E0;
+      border-radius: 100px;
+      background: #F5F5F5;
+      color: #333333;
+      font-size: 16px;
+      font-weight: 500;
+      text-align: center;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: all 0.2s;
     }
 
-    .edit-button:hover {
+    .profile-button:hover {
       background: #EEEEEE;
-    }
-
-    .edit-icon {
-      width: 20px;
-      height: 20px;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
-      background-size: contain;
-      background-position: center;
-      background-repeat: no-repeat;
     }
 
     .logout-button {
@@ -392,24 +430,6 @@ interface CompanyInfo {
 
     .logout-button:hover {
       background: #F5F5F5;
-    }
-
-    .delete-account-button {
-      margin-top: 12px;
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #FF5252;
-      border-radius: 8px;
-      background: transparent;
-      color: #FF5252;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .delete-account-button:hover {
-      background: #FF5252;
-      color: white;
     }
 
     .loading {
@@ -480,6 +500,170 @@ interface CompanyInfo {
       cursor: pointer;
     }
 
+    .empty-company-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 40px 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-company-card h3 {
+      color: #333333;
+      font-size: 18px;
+      margin: 0 0 8px 0;
+    }
+
+    .empty-company-card p {
+      color: #666666;
+      font-size: 14px;
+      margin: 0 0 24px 0;
+    }
+
+    .register-company-button {
+      background: #5BBBB3;
+      color: white;
+      border: none;
+      border-radius: 100px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .register-company-button:hover {
+      background: #4AA59E;
+    }
+
+    .leave-company-button {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 16px 0;
+      margin-top: 24px;
+      text-align: center;
+      font-size: 14px;
+      color: #666666;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .leave-company-button:hover {
+      color: #333333;
+    }
+
+    .leave-company-modal .modal-content {
+      max-width: 480px;
+      padding: 32px;
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .warning-icon {
+      width: 40px;
+      height: 40px;
+      background: #FF6B6B;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 16px;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      color: #333;
+      margin: 0;
+    }
+
+    .company-info-row {
+      display: flex;
+      padding: 16px 0;
+      border-bottom: 1px solid #EEEEEE;
+    }
+
+    .info-label {
+      flex: 0 0 80px;
+      color: #666666;
+    }
+
+    .info-value {
+      flex: 1;
+      color: #333333;
+    }
+
+    .warning-text {
+      margin: 24px 0;
+      color: #666666;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .checkbox-container {
+      margin: 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .checkbox-container label {
+      color: #333333;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .modal-buttons button {
+      flex: 1;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .cancel-button {
+      background: white;
+      border: 1px solid #E0E0E0;
+      color: #666666;
+    }
+
+    .leave-button {
+      background: #E9ECEF;
+      border: none;
+      color: #666666;
+    }
+
+    .leave-button:not(:disabled) {
+      background: #FF6B6B;
+      color: white;
+    }
+
+    .leave-button:disabled {
+      cursor: not-allowed;
+    }
+
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
       .profile-card, .company-card {
@@ -498,23 +682,14 @@ interface CompanyInfo {
         color: #fff;
       }
 
-      .edit-button {
-        background: #333;
-        color: #fff;
+      .profile-button {
+        background: #333333;
+        border-color: #444444;
+        color: #FFFFFF;
       }
 
-      .edit-button:hover {
-        background: #444;
-      }
-
-      .view-members-button {
-        border-color: #5BBBB3;
-        color: #5BBBB3;
-      }
-
-      .view-members-button:hover {
-        background: #5BBBB3;
-        color: #2a2a2a;
+      .profile-button:hover {
+        background: #444444;
       }
 
       .logout-button {
@@ -526,13 +701,56 @@ interface CompanyInfo {
         background: #444;
       }
 
-      .delete-account-button {
-        background: #333;
-        color: #fff;
+      .empty-company-card {
+        background: #2a2a2a;
       }
 
-      .delete-account-button:hover {
-        background: #444;
+      .empty-company-card h3 {
+        color: #FFFFFF;
+      }
+
+      .empty-company-card p {
+        color: #999999;
+      }
+
+      .leave-company-button {
+        color: #999999;
+      }
+
+      .leave-company-button:hover {
+        color: #FFFFFF;
+      }
+
+      .modal-header h2 {
+        color: white;
+      }
+
+      .company-info-row {
+        border-bottom-color: #444444;
+      }
+
+      .info-value {
+        color: white;
+      }
+
+      .checkbox-container label {
+        color: white;
+      }
+
+      .cancel-button {
+        background: #333333;
+        border-color: #444444;
+        color: white;
+      }
+
+      .leave-button {
+        background: #444444;
+        color: #999999;
+      }
+
+      .leave-button:not(:disabled) {
+        background: #FF6B6B;
+        color: white;
       }
     }
   `]
@@ -544,6 +762,8 @@ export class MyPageComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   showDeleteConfirm = false;
+  showLeaveConfirm = false;
+  leaveConfirmChecked = false;
 
   constructor(
     private userService: UserService,
@@ -663,6 +883,43 @@ export class MyPageComponent implements OnInit {
     } finally {
       this.isLoading = false;
       this.showDeleteConfirm = false;
+    }
+  }
+
+  registerCompany() {
+    // 기업 정보 등록 페이지로 이동
+    this.router.navigate(['/main/company/register']);
+  }
+
+  leaveCompany() {
+    this.showLeaveConfirm = true;
+  }
+
+  async confirmLeaveCompany() {
+    if (!this.leaveConfirmChecked) return;
+    
+    try {
+      this.isLoading = true;
+      // Supabase에서 사용자의 company_id를 null로 업데이트
+      const { error } = await supabase
+        .from('users')
+        .update({ company_id: null })
+        .eq('id', this.userId);
+
+      if (error) throw error;
+
+      // 모달 닫기
+      this.showLeaveConfirm = false;
+      this.leaveConfirmChecked = false;
+
+      // 페이지 새로고침
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('기업 탈퇴 중 오류 발생:', error);
+      this.errorMessage = '기업 탈퇴 처리 중 오류가 발생했습니다.';
+    } finally {
+      this.isLoading = false;
     }
   }
 } 
