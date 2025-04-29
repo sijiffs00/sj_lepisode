@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { supabase } from '../../supabase';
+import { UserService } from '../../services/user.service';
+import { UserInfo } from '../../interfaces/user.interface';
 
 interface CompanySearchResult {
   id: string;
@@ -14,11 +16,19 @@ interface CompanySearchResult {
   selector: 'app-find-company',
   template: `
     <div class="find-company-container">
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
       <div class="header">
         <button class="back-button" (click)="goBack()">
           <span class="back-icon">〈</span>
         </button>
         <h1>기업찾기</h1>
+      </div>
+
+      <div class="user-info" *ngIf="userInfo">
+        <p>{{ userInfo.name }}님, 찾으시는 기업을 검색해주세요.</p>
       </div>
 
       <div class="search-container">
@@ -57,10 +67,20 @@ interface CompanySearchResult {
               </div>
               <div class="company-info">
                 <div class="company-name">{{ company.name }}</div>
+                <div class="company-phone">12-345-12345</div>
                 <div class="company-details">
-                  <span class="industry">{{ company.industry || '업종 미입력' }}</span>
-                  <span class="address">{{ company.address || '주소 미입력' }}</span>
+                  <div class="detail-item">
+                    <img src="assets/icons/industry.svg" alt="업종" class="detail-icon">
+                    <span>{{ company.industry || '도소매/엔터/전자상거래' }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <img src="assets/icons/location.svg" alt="위치" class="detail-icon">
+                    <span>{{ company.address || '광주광역시 북구 용주로 30번길 33 0아트캐슬 203호 ~ 204호' }}</span>
+                  </div>
                 </div>
+                <button class="join-button" (click)="joinCompany(company)" [disabled]="isJoining">
+                  {{ isJoining ? '처리중...' : '가입신청' }}
+                </button>
               </div>
             </div>
           </div>
@@ -273,59 +293,97 @@ interface CompanySearchResult {
     .company-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 0;
     }
 
     .company-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 16px;
-      padding: 16px;
+      padding: 24px 16px;
       background: #FFFFFF;
-      border: 1px solid #EEEEEE;
-      border-radius: 8px;
+      border-bottom: 1px solid #EEEEEE;
       cursor: pointer;
       transition: all 0.2s;
     }
 
-    .company-item:hover {
-      border-color: #5BBBB3;
+    .company-item:last-child {
+      border-bottom: none;
     }
 
     .company-logo {
       width: 48px;
       height: 48px;
-      border-radius: 8px;
+      border-radius: 50%;
       overflow: hidden;
       border: 1px solid #EEEEEE;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #FFFFFF;
+      flex-shrink: 0;
     }
 
     .company-logo img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
     }
 
     .company-info {
       flex: 1;
+      min-width: 0;
     }
 
     .company-name {
       font-size: 16px;
-      font-weight: 500;
+      font-weight: 600;
       color: #333333;
       margin-bottom: 4px;
+    }
+
+    .company-phone {
+      font-size: 14px;
+      color: #666666;
+      margin-bottom: 8px;
     }
 
     .company-details {
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      font-size: 13px;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
       color: #666666;
+    }
+
+    .detail-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+    }
+
+    .join-button {
+      width: 100%;
+      padding: 12px;
+      background: #FFFFFF;
+      color: #5BBBB3;
+      border: 1px solid #5BBBB3;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .join-button:hover {
+      background: #F5FFFE;
     }
 
     .loading {
@@ -381,6 +439,22 @@ interface CompanySearchResult {
       opacity: 0.4;
     }
 
+    .error-message {
+      background-color: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      margin: 8px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .user-info {
+      padding: 16px;
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+    }
+
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
       .find-company-container {
@@ -411,20 +485,35 @@ interface CompanySearchResult {
       }
 
       .company-item {
-        background: #2A2A2A;
-        border-color: #333333;
+        background: #1A1A1A;
+        border-bottom-color: #333333;
       }
 
-      .company-item:hover {
-        border-color: #5BBBB3;
+      .company-logo {
+        background: #2A2A2A;
+        border-color: #333333;
       }
 
       .company-name {
         color: #FFFFFF;
       }
 
-      .company-details {
+      .company-phone {
         color: #999999;
+      }
+
+      .detail-item {
+        color: #999999;
+      }
+
+      .join-button {
+        background: #2A2A2A;
+        color: #5BBBB3;
+        border-color: #5BBBB3;
+      }
+
+      .join-button:hover {
+        background: rgba(91, 187, 179, 0.1);
       }
 
       .loading {
@@ -452,16 +541,70 @@ interface CompanySearchResult {
     }
   `]
 })
-export class FindCompanyComponent {
+export class FindCompanyComponent implements OnInit {
   searchQuery: string = '';
   hasSearched: boolean = false;
   isLoading: boolean = false;
   searchResults: CompanySearchResult[] = [];
+  userInfo: UserInfo | null = null;
+  userId: number | null = null;
+  errorMessage: string = '';
+  isJoining: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private userService: UserService
+  ) {}
+
+  ngOnInit() {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      this.userId = Number(storedUserId);
+      this.userService.setUserId(this.userId);
+    } else {
+      this.userId = this.userService.getUserId();
+    }
+    
+    if (this.userId) {
+      this.loadUserInfo();
+    } else {
+      this.router.navigate(['/login']);
+    }
+
+    this.userService.userId$.subscribe(id => {
+      this.userId = id;
+      if (id) {
+        this.loadUserInfo();
+      }
+    });
+  }
+
+  async loadUserInfo() {
+    try {
+      this.isLoading = true;
+      this.errorMessage = '';
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', this.userId)
+        .single();
+
+      if (userError) throw userError;
+
+      this.userInfo = userData;
+      console.log('사용자 정보 로드됨:', this.userInfo);
+      
+    } catch (error) {
+      console.error('정보 로드 중 오류:', error);
+      this.errorMessage = '정보를 불러오는 중 오류가 발생했습니다.';
+    } finally {
+      this.isLoading = false;
+    }
+  }
 
   goBack() {
-    window.history.back();
+    this.router.navigate(['/main/mypage']);
   }
 
   clearSearch() {
@@ -475,27 +618,72 @@ export class FindCompanyComponent {
 
     try {
       this.isLoading = true;
-      this.hasSearched = true;
+      this.errorMessage = '';
 
       const { data, error } = await supabase
         .from('companies')
-        .select('id, name, industry, address, logo_url')
-        .ilike('name', `%${this.searchQuery}%`)
-        .order('name');
+        .select('*')
+        .ilike('name', `%${this.searchQuery}%`);
 
       if (error) throw error;
 
       this.searchResults = data || [];
-      
+      this.hasSearched = true;
+
     } catch (error) {
-      console.error('기업 검색 중 오류 발생:', error);
-      this.searchResults = [];
+      console.error('검색 중 오류:', error);
+      this.errorMessage = '검색 중 오류가 발생했습니다.';
     } finally {
       this.isLoading = false;
     }
   }
 
   goToRegister() {
-    this.router.navigate(['/main/register_company']);
+    if (!this.userInfo) {
+      this.errorMessage = '사용자 정보를 불러올 수 없습니다.';
+      return;
+    }
+    this.router.navigate(['/register']);
+  }
+
+  async joinCompany(company: CompanySearchResult) {
+    if (!this.userInfo || !this.userId) {
+      this.errorMessage = '사용자 정보를 불러올 수 없습니다.';
+      return;
+    }
+
+    try {
+      this.isJoining = true;
+      this.errorMessage = '';
+
+      // 이미 회사에 소속되어 있는지 확인
+      if (this.userInfo.company_id) {
+        this.errorMessage = '이미 다른 기업에 소속되어 있습니다.';
+        return;
+      }
+
+      // 사용자의 company_id 업데이트
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ 
+          company_id: company.id,
+          auth_status: 'pending'  // 승인 대기 상태로 설정
+        })
+        .eq('id', this.userId);
+
+      if (updateError) throw updateError;
+
+      // 성공 메시지 표시
+      alert(`${company.name}에 가입 신청이 완료되었습니다.\n관리자 승인 후 이용하실 수 있습니다.`);
+      
+      // 마이페이지로 리다이렉트
+      this.router.navigate(['/main/mypage']);
+
+    } catch (error) {
+      console.error('기업 가입 신청 중 오류:', error);
+      this.errorMessage = '기업 가입 신청 중 오류가 발생했습니다.';
+    } finally {
+      this.isJoining = false;
+    }
   }
 } 

@@ -81,8 +81,8 @@ interface CompanyInfo {
           <div class="company-logo">
             <img [src]="companyInfo.logo_url || 'assets/default-company-logo.png'" alt="기업 로고">
           </div>
-          <span class="approval-badge" [class.pending]="companyInfo.approval_status !== 'approved'">
-            {{ companyInfo.approval_status === 'approved' ? '승인완료' : '승인 대기' }}
+          <span class="approval-badge" [class.pending]="!userInfo?.company_approved">
+            {{ !userInfo?.company_approved ? '대기중' : '승인완료' }}
           </span>
         </div>
 
@@ -243,16 +243,17 @@ interface CompanyInfo {
     }
 
     .approval-badge {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 14px;
-      background: #FFF3E0;
-      color: #FF9800;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #E8F5E9;
+      color: #2E7D32;
     }
 
-    .approval-badge.approved {
-      background: #E8F5E9;
-      color: #4CAF50;
+    .approval-badge.pending {
+      background: #FFF3E0;
+      color: #E65100;
     }
 
     .company-name {
