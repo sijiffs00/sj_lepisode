@@ -14,6 +14,8 @@ import { CompanyDetailComponent } from './main/companies/company-detail/company-
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { UpdateComponent } from './pages/update/update.component';
 import { FindCompanyComponent } from './main/find-company/find-company.component';
+import { RegisterCompanyComponent } from './main/register-company/register-company.component';
+import { IndustrySelectComponent } from './main/industry-select/industry-select.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -34,11 +36,16 @@ const routes: Routes = [
   },
   { path: 'register', component: RegisterComponent },
   { path: 'main/find_company', component: FindCompanyComponent },  // 메인 레이아웃 밖으로 이동
+  { path: 'main/register-company', component: RegisterCompanyComponent },  // 기업 등록 페이지
   {
     path: 'admin',
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
   },
-  { path: 'main/mypage/update', component: UpdateComponent }
+  { path: 'main/mypage/update', component: UpdateComponent },
+  {
+    path: 'main/industry_select',
+    component: IndustrySelectComponent
+  }
 ];
 
 @NgModule({

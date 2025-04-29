@@ -643,7 +643,7 @@ export class FindCompanyComponent implements OnInit {
       this.errorMessage = '사용자 정보를 불러올 수 없습니다.';
       return;
     }
-    this.router.navigate(['/register']);
+    this.router.navigate(['/main/register-company']);
   }
 
   async joinCompany(company: CompanySearchResult) {
