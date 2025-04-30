@@ -8,16 +8,19 @@ interface User {
   contact?: string;
   email?: string;
   department?: string;
+  company_id?: string;
   company?: {
+    id: string;
     name: string;
     industry: string;
-  } | null;
+  };
 }
 
 interface Company {
   id: string;
   name: string;
   industry: string;
+  address?: string;
 }
 
 interface SearchResult {
@@ -27,9 +30,16 @@ interface SearchResult {
   position?: string;
   contact?: string;
   email?: string;
-  company_name?: string;
+  department?: string;
+  company?: {
+    name: string;
+    industry: string;
+  };
+  ceo_name?: string;
+  logo_url?: string;
   industry?: string;
-  tags?: string[];
+  address?: string;
+  homepage_url?: string;
 }
 
 @Component({
@@ -65,31 +75,38 @@ interface SearchResult {
             회원 검색결과가 없습니다.
           </div>
 
-          <div class="result-item" *ngFor="let result of userResults">
-            <div class="result-content">
-              <div class="result-header">
-                <div class="avatar">
-                  {{ result.name[0] }}
-                </div>
-                <div class="main-info">
-                  <div class="name-position">
-                    <span class="name">{{ result.name }}</span>
-                    <span class="position" *ngIf="result.position">{{ result.position }}</span>
-                  </div>
-                  <div class="contact-info">
-                    {{ result.contact }} · {{ result.email }}
-                  </div>
+          <div class="result-card" *ngFor="let result of userResults">
+            <!-- 회원 정보 -->
+            <div class="user-info">
+              <div class="name-position">
+                <span class="name">{{ result.name }}</span>
+                <span class="position" *ngIf="result.position">{{ result.position }}</span>
+              </div>
+              <div class="contact-info">
+                <ng-container *ngIf="result.contact || result.email">
+                  <span class="phone" *ngIf="result.contact">{{ result.contact }}</span>
+                  <span class="dot" *ngIf="result.contact && result.email">·</span>
+                  <span class="email" *ngIf="result.email">{{ result.email }}</span>
+                </ng-container>
+              </div>
+            </div>
+
+            <!-- 기업 정보 (민트색 박스) -->
+            <div class="company-info" *ngIf="result.company">
+              <div class="company-logo">
+                <div class="logo-circle">
+                  {{ (result.company?.name && result.company.name[0]) ? result.company.name[0].toUpperCase() : '' }}
                 </div>
               </div>
-              <div class="company-info" *ngIf="result.company_name">
-                <div class="company-logo">
-                  <!-- 회사 로고는 나중에 추가 -->
+              <div class="company-details">
+                <div class="company-title">
+                  <span class="role">{{ result.position || '대표' }}</span>
+                  <span class="company-name">{{ result.company?.name }}</span>
                 </div>
-                <div class="company-name">{{ result.company_name }}</div>
-                <div class="company-position">{{ result.position }}</div>
-              </div>
-              <div class="tags" *ngIf="result.tags && result.tags.length > 0">
-                <span class="tag" *ngFor="let tag of result.tags">{{ tag }}</span>
+                <div class="company-tags">
+                  <span class="tag">{{ result.company?.industry }}</span>
+                  <span class="tag" *ngIf="result.department">{{ result.department }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -105,15 +122,24 @@ interface SearchResult {
             기업 검색결과가 없습니다.
           </div>
 
-          <div class="result-item" *ngFor="let result of companyResults">
-            <div class="result-content">
-              <div class="company-header">
-                <div class="company-logo">
-                  <!-- 회사 로고는 나중에 추가 -->
+          <div class="result-card" *ngFor="let result of companyResults">
+            <div class="company-header">
+              <div class="company-logo">
+                <div class="logo-circle" *ngIf="!result.logo_url">
+                  {{ result.name[0] }}
                 </div>
-                <div class="company-info">
-                  <div class="company-name">{{ result.name }}</div>
-                  <div class="company-industry">{{ result.industry }}</div>
+                <img *ngIf="result.logo_url" [src]="result.logo_url" alt="회사 로고" class="company-logo-img">
+              </div>
+              <div class="company-info">
+                <div class="company-name">{{ result.name }}</div>
+                <div class="company-details">
+                  <span class="industry">{{ result.industry }}</span>
+                  <span class="dot" *ngIf="result.industry && result.address">·</span>
+                  <span class="address" *ngIf="result.address">{{ result.address }}</span>
+                </div>
+                <div class="company-extra" *ngIf="result.ceo_name || result.homepage_url">
+                  <span class="ceo" *ngIf="result.ceo_name">대표: {{ result.ceo_name }}</span>
+                  <a *ngIf="result.homepage_url" [href]="result.homepage_url" target="_blank" class="homepage">홈페이지</a>
                 </div>
               </div>
             </div>
@@ -300,60 +326,93 @@ interface SearchResult {
     }
 
     .name {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 600;
-      color: #333;
+      color: #111827;
     }
 
     .position {
-      color: #666;
-      font-size: 14px;
+      font-size: 16px;
+      color: #6B7280;
+      margin-left: 4px;
     }
 
     .contact-info {
-      color: #999;
+      color: #9CA3AF;
       font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      color: #D1D5DB;
     }
 
     .company-info {
+      background: rgba(52, 211, 153, 0.1);
+      border-radius: 8px;
+      padding: 16px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      margin-bottom: 16px;
+      gap: 16px;
+      margin-top: 12px;
     }
 
     .company-logo {
-      width: 32px;
-      height: 32px;
-      background: #eee;
-      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #10B981;
+      font-size: 16px;
+      text-transform: uppercase;
+      border: 1px solid #E5E7EB;
+    }
+
+    .company-details {
+      flex: 1;
+    }
+
+    .company-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .role {
+      font-size: 14px;
+      color: #374151;
     }
 
     .company-name {
-      font-weight: 500;
-      color: #333;
-    }
-
-    .company-position {
-      color: #666;
       font-size: 14px;
+      color: #111827;
+      font-weight: 500;
     }
 
-    .tags {
+    .company-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
 
     .tag {
-      padding: 6px 12px;
-      background: #f1f3f5;
+      background: white;
+      color: #10B981;
+      padding: 4px 12px;
       border-radius: 100px;
-      font-size: 14px;
-      color: #666;
+      font-size: 13px;
+      border: 1px solid #E5E7EB;
     }
 
     .section {
@@ -404,6 +463,113 @@ interface SearchResult {
         color: #9CA3AF;
       }
     }
+
+    .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-info {
+      margin-bottom: 16px;
+    }
+
+    .name-position {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .position {
+      font-size: 16px;
+      color: #6B7280;
+      margin-left: 4px;
+    }
+
+    .contact-info {
+      color: #9CA3AF;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      color: #D1D5DB;
+    }
+
+    .company-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .company-logo {
+      width: 32px;
+      height: 32px;
+      background: #eee;
+      border-radius: 4px;
+    }
+
+    .company-info {
+      flex: 1;
+    }
+
+    .company-name {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .company-details {
+      flex: 1;
+    }
+
+    .industry {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .dot {
+      margin: 0 8px;
+    }
+
+    .address {
+      color: #999;
+      font-size: 14px;
+    }
+
+    .company-extra {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ceo {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .homepage {
+      color: #0891B2;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .company-logo-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+    }
   `]
 })
 export class SearchComponent {
@@ -435,47 +601,114 @@ export class SearchComponent {
 
     try {
       // 사용자 검색
-      const { data: userOnly, error: userOnlyError } = await supabase
+      const { data: users, error: userError } = await supabase
         .from('users')
-        .select('id, name, position, contact, email, department, company_id')
-        .ilike('name', `%${this.searchQuery}%`)
+        .select(`
+          id, 
+          name, 
+          position, 
+          contact, 
+          email, 
+          department,
+          company_id,
+          companies!inner (
+            id,
+            name,
+            industry
+          )
+        `)
+        .or(`name.ilike.%${this.searchQuery}%,email.ilike.%${this.searchQuery}%,department.ilike.%${this.searchQuery}%`)
         .limit(10);
 
-      if (userOnly && userOnly.length > 0) {
-        // company 정보 따로 가져오기
-        const { data: companyData, error: companyError } = await supabase
-          .from('companies')
-          .select('id, name, industry')
-          .eq('id', userOnly[0].company_id)
-          .single();
+      if (userError) {
+        console.error('사용자 검색 오류:', userError);
+        throw userError;
+      }
 
-        // 사용자 검색 결과 변환
-        this.userResults = userOnly.map((user: any) => ({
-          type: 'user' as const,
+      if (users) {
+        this.userResults = users.map((user: any) => ({
+          type: 'user',
           id: user.id,
           name: user.name,
           position: user.position,
           contact: user.contact,
           email: user.email,
-          company_name: companyData?.name,
-          tags: [user.department, user.position].filter(Boolean)
+          department: user.department,
+          company: user.companies ? {
+            name: user.companies.name,
+            industry: user.companies.industry
+          } : undefined
         }));
       }
 
-      // 회사 검색
-      const { data: companies, error: companySearchError } = await supabase
+      console.log('검색된 사용자:', this.userResults); // 디버깅용 로그
+
+      // 기업 검색
+      const { data: companies, error: companyError } = await supabase
         .from('companies')
-        .select('*')
-        .or(`name.ilike.%${this.searchQuery}%,industry.ilike.%${this.searchQuery}%,address.ilike.%${this.searchQuery}%`)
+        .select(`
+          id,
+          name,
+          ceo_name,
+          logo_url,
+          industry,
+          address,
+          homepage_url
+        `)
+        .ilike('name', `%${this.searchQuery}%`)
         .limit(10);
 
-      if (companies) {
+      console.log('기업 검색 결과:', companies); // 디버깅용 로그 추가
+
+      if (companyError) {
+        console.error('기업 검색 오류:', companyError);
+        throw companyError;
+      }
+
+      if (companies && companies.length > 0) {
         this.companyResults = companies.map(company => ({
-          type: 'company' as const,
+          type: 'company',
           id: company.id,
           name: company.name,
-          industry: company.industry
+          ceo_name: company.ceo_name,
+          logo_url: company.logo_url,
+          industry: company.industry,
+          address: company.address,
+          homepage_url: company.homepage_url
         }));
+      } else {
+        // 회사 이름으로 검색 결과가 없으면 산업분야나 대표자 이름으로 검색
+        const { data: companiesByOther, error: otherError } = await supabase
+          .from('companies')
+          .select(`
+            id,
+            name,
+            ceo_name,
+            logo_url,
+            industry,
+            address,
+            homepage_url
+          `)
+          .or(`industry.ilike.%${this.searchQuery}%,ceo_name.ilike.%${this.searchQuery}%`)
+          .limit(10);
+
+        if (otherError) {
+          console.error('기업 추가 검색 오류:', otherError);
+          throw otherError;
+        }
+
+        if (companiesByOther && companiesByOther.length > 0) {
+          this.companyResults = companiesByOther.map(company => ({
+            type: 'company',
+            id: company.id,
+            name: company.name,
+            ceo_name: company.ceo_name,
+            logo_url: company.logo_url,
+            industry: company.industry,
+            address: company.address,
+            homepage_url: company.homepage_url
+          }));
+        }
       }
 
     } catch (error) {
