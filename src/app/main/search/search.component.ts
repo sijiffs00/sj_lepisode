@@ -36,7 +36,10 @@ interface SearchResult {
   selector: 'app-search',
   template: `
     <div class="search-container">
-      <h1 class="search-title">통합 검색</h1>
+      <div class="header">
+        <img src="assets/gjva_logo.png" alt="GJVA 로고" class="logo">
+        <h1 class="title">통합 검색</h1>
+      </div>
       
       <div class="search-box">
         <input 
@@ -51,96 +54,143 @@ interface SearchResult {
         </button>
       </div>
 
-      <div class="loading" *ngIf="isLoading">
-        검색중...
-      </div>
-
-      <div class="search-results" *ngIf="!isLoading && searchResults.length > 0">
-        <div class="result-item" *ngFor="let result of searchResults">
-          <!-- 사용자 결과 -->
-          <div class="result-content" *ngIf="result.type === 'user'">
-            <div class="result-header">
-              <div class="avatar">
-                {{ result.name[0] }}
-              </div>
-              <div class="main-info">
-                <div class="name-position">
-                  <span class="name">{{ result.name }}</span>
-                  <span class="position" *ngIf="result.position">{{ result.position }}</span>
-                </div>
-                <div class="contact-info">
-                  {{ result.contact }} · {{ result.email }}
-                </div>
-              </div>
-            </div>
-            <div class="company-info" *ngIf="result.company_name">
-              <div class="company-logo">
-                <!-- 회사 로고는 나중에 추가 -->
-              </div>
-              <div class="company-name">{{ result.company_name }}</div>
-              <div class="company-position">{{ result.position }}</div>
-            </div>
-            <div class="tags" *ngIf="result.tags && result.tags.length > 0">
-              <span class="tag" *ngFor="let tag of result.tags">{{ tag }}</span>
-            </div>
+      <div class="search-results" *ngIf="!isLoading && hasSearched">
+        <!-- 회원 섹션 -->
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">회원 <span class="count">{{ userResults.length }}</span></h2>
+          </div>
+          
+          <div class="no-results" *ngIf="userResults.length === 0">
+            회원 검색결과가 없습니다.
           </div>
 
-          <!-- 기업 결과 -->
-          <div class="result-content" *ngIf="result.type === 'company'">
-            <div class="company-header">
-              <div class="company-logo">
-                <!-- 회사 로고는 나중에 추가 -->
+          <div class="result-item" *ngFor="let result of userResults">
+            <div class="result-content">
+              <div class="result-header">
+                <div class="avatar">
+                  {{ result.name[0] }}
+                </div>
+                <div class="main-info">
+                  <div class="name-position">
+                    <span class="name">{{ result.name }}</span>
+                    <span class="position" *ngIf="result.position">{{ result.position }}</span>
+                  </div>
+                  <div class="contact-info">
+                    {{ result.contact }} · {{ result.email }}
+                  </div>
+                </div>
               </div>
-              <div class="company-info">
-                <div class="company-name">{{ result.name }}</div>
-                <div class="company-industry">{{ result.industry }}</div>
+              <div class="company-info" *ngIf="result.company_name">
+                <div class="company-logo">
+                  <!-- 회사 로고는 나중에 추가 -->
+                </div>
+                <div class="company-name">{{ result.company_name }}</div>
+                <div class="company-position">{{ result.position }}</div>
+              </div>
+              <div class="tags" *ngIf="result.tags && result.tags.length > 0">
+                <span class="tag" *ngFor="let tag of result.tags">{{ tag }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기업 섹션 -->
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">기업 <span class="count">{{ companyResults.length }}</span></h2>
+          </div>
+
+          <div class="no-results" *ngIf="companyResults.length === 0">
+            기업 검색결과가 없습니다.
+          </div>
+
+          <div class="result-item" *ngFor="let result of companyResults">
+            <div class="result-content">
+              <div class="company-header">
+                <div class="company-logo">
+                  <!-- 회사 로고는 나중에 추가 -->
+                </div>
+                <div class="company-info">
+                  <div class="company-name">{{ result.name }}</div>
+                  <div class="company-industry">{{ result.industry }}</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="no-results" *ngIf="!isLoading && searchResults.length === 0 && hasSearched">
-        검색 결과가 없습니다.
+      <div class="loading" *ngIf="isLoading">
+        검색중...
       </div>
     </div>
   `,
   styles: [`
-    .search-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
+    :host {
+      display: block;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      width: 100%;
     }
 
-    .search-title {
-      font-size: 32px;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 40px;
+    :host ::ng-deep * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .search-container {
+      min-height: 100vh;
+      background-color: white;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+
+    .header {
+      background-color: #0891B2;
+      padding: 20px;
+      width: 100%;
+    }
+
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .title {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
     }
 
     .search-box {
       position: relative;
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
+      width: calc(100% - 40px);
+      margin: 20px auto;
       background: #fff;
       border-radius: 100px;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid #E5E7EB;
       overflow: hidden;
+      box-shadow: none;
     }
 
     .search-input {
       width: 100%;
-      padding: 20px 60px 20px 30px;
+      padding: 12px 50px 12px 20px;
       border: none;
-      font-size: 18px;
+      font-size: 16px;
       color: #333;
       background: transparent;
     }
 
     .search-input::placeholder {
-      color: #999;
+      color: #9CA3AF;
     }
 
     .search-input:focus {
@@ -149,38 +199,42 @@ interface SearchResult {
 
     .search-button {
       position: absolute;
-      right: 20px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
       cursor: pointer;
       padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .search-icon {
       display: block;
-      width: 24px;
-      height: 24px;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666666"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
+      width: 20px;
+      height: 20px;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239CA3AF"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
       background-size: contain;
       background-repeat: no-repeat;
-      opacity: 0.6;
+      opacity: 1;
       transition: opacity 0.2s;
     }
 
     .search-button:hover .search-icon {
-      opacity: 1;
+      opacity: 0.8;
     }
 
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
-      .search-title {
-        color: #fff;
+      .search-container {
+        background: #1a1a1a;
       }
 
       .search-box {
         background: #2a2a2a;
+        border-color: #374151;
       }
 
       .search-input {
@@ -188,11 +242,11 @@ interface SearchResult {
       }
 
       .search-input::placeholder {
-        color: #666;
+        color: #6B7280;
       }
 
       .search-icon {
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236B7280"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>');
       }
     }
 
@@ -224,7 +278,7 @@ interface SearchResult {
     .avatar {
       width: 48px;
       height: 48px;
-      background: #5BBBB3;
+      background: #0891B2;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -302,46 +356,66 @@ interface SearchResult {
       color: #666;
     }
 
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-header {
+      padding: 0 20px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count {
+      font-size: 16px;
+      color: #6B7280;
+    }
+
     .no-results {
       text-align: center;
-      padding: 40px;
-      color: #666;
+      padding: 20px;
+      color: #6B7280;
+      background: #F9FAFB;
+      border-radius: 8px;
+      margin: 0 20px;
+      font-size: 14px;
     }
 
     /* 다크모드 대응 */
     @media (prefers-color-scheme: dark) {
-      .result-item {
-        background: #2a2a2a;
+      .section-title {
+        color: #F9FAFB;
       }
 
-      .name {
-        color: #fff;
+      .count {
+        color: #9CA3AF;
       }
 
-      .position, .company-name {
-        color: #ccc;
-      }
-
-      .company-info {
-        background: #333;
-      }
-
-      .tag {
-        background: #333;
-        color: #ccc;
+      .no-results {
+        background: #1F2937;
+        color: #9CA3AF;
       }
     }
   `]
 })
 export class SearchComponent {
   searchQuery: string = '';
-  searchResults: SearchResult[] = [];
+  userResults: SearchResult[] = [];
+  companyResults: SearchResult[] = [];
   isLoading: boolean = false;
   hasSearched: boolean = false;
-  private isSearching: boolean = false;  // 검색 중복 실행 방지를 위한 플래그
+  private isSearching: boolean = false;
 
   async handleSearch() {
-    if (this.isSearching) return;  // 이미 검색 중이면 중복 실행 방지
+    if (this.isSearching) return;
     this.isSearching = true;
     
     try {
@@ -356,19 +430,16 @@ export class SearchComponent {
 
     this.isLoading = true;
     this.hasSearched = true;
-    this.searchResults = [];
+    this.userResults = [];
+    this.companyResults = [];
 
     try {
-      console.log('검색어:', this.searchQuery);
-
-      // 먼저 users 테이블만 검색
+      // 사용자 검색
       const { data: userOnly, error: userOnlyError } = await supabase
         .from('users')
         .select('id, name, position, contact, email, department, company_id')
         .ilike('name', `%${this.searchQuery}%`)
         .limit(10);
-
-      console.log('사용자 기본 정보:', userOnly);
 
       if (userOnly && userOnly.length > 0) {
         // company 정보 따로 가져오기
@@ -378,10 +449,8 @@ export class SearchComponent {
           .eq('id', userOnly[0].company_id)
           .single();
 
-        console.log('회사 정보:', companyData);
-
-        // 검색 결과 변환
-        const userResults: SearchResult[] = userOnly.map((user: any) => ({
+        // 사용자 검색 결과 변환
+        this.userResults = userOnly.map((user: any) => ({
           type: 'user' as const,
           id: user.id,
           name: user.name,
@@ -391,7 +460,6 @@ export class SearchComponent {
           company_name: companyData?.name,
           tags: [user.department, user.position].filter(Boolean)
         }));
-        this.searchResults.push(...userResults);
       }
 
       // 회사 검색
@@ -402,16 +470,13 @@ export class SearchComponent {
         .limit(10);
 
       if (companies) {
-        const companyResults: SearchResult[] = companies.map(company => ({
+        this.companyResults = companies.map(company => ({
           type: 'company' as const,
           id: company.id,
           name: company.name,
           industry: company.industry
         }));
-        this.searchResults.push(...companyResults);
       }
-
-      console.log('최종 검색 결과:', this.searchResults);
 
     } catch (error) {
       console.error('검색 중 오류 발생:', error);

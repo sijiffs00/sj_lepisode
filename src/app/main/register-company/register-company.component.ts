@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
 @Component({
@@ -39,10 +39,10 @@ import { Router } from '@angular/router';
         <div class="form-group">
           <label>기업 소재지 <span class="required">*</span></label>
           <div class="address-inputs">
-            <input type="text" placeholder="입력해주세요" [(ngModel)]="address">
-            <button class="search-button">주소 검색</button>
+            <input type="text" placeholder="입력해주세요" [(ngModel)]="address" readonly>
+            <button class="search-button" (click)="searchAddress()">주소 검색</button>
           </div>
-          <input type="text" placeholder="입력해주세요" [(ngModel)]="addressDetail">
+          <input type="text" placeholder="상세주소를 입력해주세요" [(ngModel)]="addressDetail">
         </div>
 
         <div class="form-group">
@@ -336,7 +336,10 @@ export class RegisterCompanyComponent {
   industry: string = '';
   businessLicenseFile: File | null = null;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private ngZone: NgZone
+  ) {
     // 업종 선택 페이지에서 전달받은 데이터 처리
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
@@ -345,6 +348,32 @@ export class RegisterCompanyComponent {
         this.industry = state.selectedIndustry;
       }
     }
+  }
+
+  // 주소 검색 팝업을 띄우는 함수
+  searchAddress() {
+    new (window as any).daum.Postcode({
+      oncomplete: (data: any) => {
+        // NgZone을 사용하여 Angular의 변경 감지 체계 안에서 실행
+        this.ngZone.run(() => {
+          // 도로명 주소가 있는 경우 도로명 주소를, 없는 경우 지번 주소를 사용
+          this.address = data.roadAddress || data.jibunAddress;
+          
+          // 건물명이 있는 경우 건물명도 추가
+          if (data.buildingName) {
+            this.address += ` (${data.buildingName})`;
+          }
+
+          // 상세주소 입력창으로 포커스 이동
+          setTimeout(() => {
+            const detailInput = document.querySelector('input[placeholder="상세주소를 입력해주세요"]');
+            if (detailInput) {
+              (detailInput as HTMLInputElement).focus();
+            }
+          }, 100);
+        });
+      }
+    }).open();
   }
 
   goBack() {
