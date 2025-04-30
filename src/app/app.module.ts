@@ -11,13 +11,13 @@ import { LoginComponent } from './login/login.component';
 import { MainComponent } from './main/main.component';
 import { RegisterComponent } from './register/register.component';
 import { AdminModule } from './admin/admin.module';
+import { MainModule } from './main/main.module';
 
 // 메인 페이지의 자식 컴포넌트들 import
 import { SearchComponent } from './main/search/search.component';
 import { MembersComponent } from './main/members/members.component';
 import { OrganizationComponent } from './main/organization/organization.component';
 import { OrganizationDetailComponent } from './main/organization/organization-detail.component';
-import { CompaniesComponent } from './main/companies/companies.component';
 import { CompanyDetailComponent } from './main/companies/company-detail/company-detail.component';
 import { MyPageComponent } from './main/mypage/mypage.component';
 import { CompanyService } from './services/company.service';
@@ -38,7 +38,6 @@ import { IndustrySelectComponent } from './main/industry-select/industry-select.
     MembersComponent,
     OrganizationComponent,
     OrganizationDetailComponent,
-    CompaniesComponent,
     CompanyDetailComponent,
     MyPageComponent,
     UpdateComponent,
@@ -55,7 +54,8 @@ import { IndustrySelectComponent } from './main/industry-select/industry-select.
     CommonModule,
     RouterModule,
     AppRoutingModule,
-    AdminModule
+    AdminModule,
+    MainModule
   ],
   providers: [
     CompanyService,

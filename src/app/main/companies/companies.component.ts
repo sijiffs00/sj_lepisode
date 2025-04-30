@@ -39,12 +39,13 @@ declare global {
            (click)="toggleBottomSheet()">
         <div class="bottom-sheet-header">
           <div class="handle"></div>
-          <h3>기업 목록 <span class="company-count">({{ companies.length }})</span></h3>
+          <h3>기업 정보</h3>
         </div>
         <div class="bottom-sheet-content" (click)="$event.stopPropagation()">
           <div class="company-list">
-            <div *ngFor="let company of companies" class="company-wrapper">
-              <div class="company-item" (click)="selectCompany(company, $event)">
+            <!-- 선택된 기업만 표시 -->
+            <div class="company-wrapper" *ngIf="selectedCompanyId">
+              <div class="company-item" *ngFor="let company of companies | filterById:selectedCompanyId">
                 <div class="company-logo">
                   <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
                   <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
@@ -64,10 +65,10 @@ declare global {
               </div>
               <!-- 구성원 정보 섹션 -->
               <div class="member-section" (click)="$event.stopPropagation()">
-                <p class="company-members">구성원<span class="member-count">({{ company.memberCount || 0 }})</span></p>
+                <p class="company-members">구성원<span class="member-count">({{ companyMembers.length || 0 }})</span></p>
                 
-                <!-- 구성원 목록 - 선택된 기업에만 표시 -->
-                <div class="members-container" *ngIf="selectedCompanyId === company.id">
+                <!-- 구성원 목록 -->
+                <div class="members-container">
                   <!-- 로딩 중 표시 -->
                   <div *ngIf="isLoadingMembers" class="loading">
                     구성원 정보를 불러오는 중...
@@ -203,12 +204,12 @@ declare global {
       transition: transform 0.2s ease-out;
       z-index: 1000;
       touch-action: none;
-      height: 60vh; /* 45vh에서 60vh로 변경 */
+      height: 45vh; /* 60vh에서 45vh로 변경 */
     }
 
     .bottom-sheet.expanded {
       transform: translateY(0) !important;
-      height: 85vh; /* 확장 시 높이 증가 */
+      height: 45vh; /* 85vh에서 45vh로 변경 */
     }
 
     .bottom-sheet-header {
@@ -236,13 +237,13 @@ declare global {
     }
 
     .bottom-sheet-content {
-      height: calc(60vh - 60px); /* 헤더 높이 제외, 45vh에서 60vh로 변경 */
+      height: calc(45vh - 60px); /* 60vh에서 45vh로 변경 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
 
     .expanded .bottom-sheet-content {
-      height: calc(85vh - 60px); /* 확장 시 높이 조정 */
+      height: calc(45vh - 60px); /* 85vh에서 45vh로 변경 */
     }
 
     .company-list {
@@ -654,6 +655,12 @@ export class CompaniesComponent implements OnInit {
 
               window.kakao.maps.event.addListener(marker, 'mouseout', () => {
                 infowindow.close();
+              });
+
+              // 마커 클릭 이벤트 추가
+              window.kakao.maps.event.addListener(marker, 'click', () => {
+                // 해당 기업 선택 및 상세 정보 표시
+                this.selectCompany(company, new Event('click'));
               });
 
               console.log(`${company.name}의 마커 생성 완료!`);
