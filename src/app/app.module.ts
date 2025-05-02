@@ -23,7 +23,6 @@ import { MyPageComponent } from './main/mypage/mypage.component';
 import { CompanyService } from './services/company.service';
 import { SupabaseService } from './services/supabase.service';
 import { UpdateComponent } from './pages/update/update.component';
-import { DataExampleComponent } from './components/data-example/data-example.component';
 import { FindCompanyComponent } from './main/find-company/find-company.component';
 import { RegisterCompanyComponent } from './main/register-company/register-company.component';
 import { IndustrySelectComponent } from './main/industry-select/industry-select.component';
@@ -41,7 +40,6 @@ import { IndustrySelectComponent } from './main/industry-select/industry-select.
     CompanyDetailComponent,
     MyPageComponent,
     UpdateComponent,
-    DataExampleComponent,
     FindCompanyComponent,
     RegisterCompanyComponent,
     IndustrySelectComponent
