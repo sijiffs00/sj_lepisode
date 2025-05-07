@@ -1,5 +1,6 @@
 import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { supabase } from '../../supabase'; 
 
 @Component({
   selector: 'app-register-company',
@@ -71,7 +72,7 @@ import { Router } from '@angular/router';
 
       <div class="bottom-buttons">
         <button class="cancel-button" (click)="goBack()">취소</button>
-        <button class="submit-button" [disabled]="!isFormValid()">등록</button>
+        <button class="submit-button" [disabled]="!isFormValid()" (click)="registerCompany()">등록</button>
       </div>
     </div>
   `,
@@ -386,5 +387,30 @@ export class RegisterCompanyComponent {
 
   isFormValid(): boolean {
     return !!(this.companyName && this.ceoName && this.address && this.industry);
+  }
+
+  // 회사 등록 
+  async registerCompany() {
+
+    const companyData = {
+      name: this.companyName, // 회사 이름
+      ceo_name: this.ceoName, // 대표자 이름
+      address: this.address + ' ' + this.addressDetail, // 주소 + 상세주소
+      industry: this.industry, // 업종
+      approval_status: 'pending', 
+    };
+
+
+    const { data, error } = await supabase
+      .from('companies')
+      .insert([companyData]);
+
+    if (error) {
+      alert('등록에 실패. 재시도 해주세요\n' + error.message);
+    } else {
+      alert('기업 등록 성공');
+      // 등록 성공 시, 마이페이지로 이동
+      this.router.navigate(['/main/mypage']);
+    }
   }
 } 
