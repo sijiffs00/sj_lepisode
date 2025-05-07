@@ -71,7 +71,7 @@ interface SupabaseUser {
             <!-- 회사 정보 박스 -->
             <div class="company-info">
               <div class="company-logo">
-                {{ user.company.name[0]?.toUpperCase() }}
+                {{ user.company.name[0].toUpperCase() }}
               </div>
               <div class="company-details">
                 <div class="company-position">

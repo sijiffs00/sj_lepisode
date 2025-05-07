@@ -95,16 +95,16 @@ interface SearchResult {
             <div class="company-info" *ngIf="result.company">
               <div class="company-logo">
                 <div class="logo-circle">
-                  {{ (result.company?.name && result.company.name[0]) ? result.company.name[0].toUpperCase() : '' }}
+                  {{ (result.company.name && result.company.name[0]) ? result.company.name[0].toUpperCase() : '' }}
                 </div>
               </div>
               <div class="company-details">
                 <div class="company-title">
                   <span class="role">{{ result.position || '대표' }}</span>
-                  <span class="company-name">{{ result.company?.name }}</span>
+                  <span class="company-name">{{ result.company.name }}</span>
                 </div>
                 <div class="company-tags">
-                  <span class="tag">{{ result.company?.industry }}</span>
+                  <span class="tag">{{ result.company.industry }}</span>
                   <span class="tag" *ngIf="result.department">{{ result.department }}</span>
                 </div>
               </div>
