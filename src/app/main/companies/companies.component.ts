@@ -44,56 +44,80 @@ declare global {
         <div class="bottom-sheet-content" (click)="$event.stopPropagation()">
           <div class="company-list">
             <!-- 선택된 기업만 표시 -->
-            <div class="company-wrapper" *ngIf="selectedCompanyId">
-              <div class="company-item" *ngFor="let company of companies | filterById:selectedCompanyId">
-                <div class="company-logo">
-                  <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
-                  <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
-                </div>
-                <div class="company-info">
-                  <h4>{{ company.name }}</h4>
-                  <div class="company-details">
-                    <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
-                    <p class="company-contact" *ngIf="getCompanyPhone(company)">
-                      <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
-                    </p>
-                    <p class="company-address">
-                      <span class="address-icon">📍</span> {{ company.address }}
-                    </p>
+            <ng-container *ngIf="selectedCompanyId; else companyList">
+              <div class="company-wrapper">
+                <div class="company-item" *ngFor="let company of companies | filterById:selectedCompanyId">
+                  <div class="company-logo">
+                    <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
+                    <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
+                  </div>
+                  <div class="company-info">
+                    <h4>{{ company.name }}</h4>
+                    <div class="company-details">
+                      <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
+                      <p class="company-contact" *ngIf="getCompanyPhone(company)">
+                        <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
+                      </p>
+                      <p class="company-address">
+                        <span class="address-icon">📍</span> {{ company.address }}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <!-- 구성원 정보 섹션 -->
-              <div class="member-section" (click)="$event.stopPropagation()">
-                <p class="company-members">구성원<span class="member-count">({{ companyMembers.length || 0 }})</span></p>
-                
-                <!-- 구성원 목록 -->
-                <div class="members-container">
-                  <!-- 로딩 중 표시 -->
-                  <div *ngIf="isLoadingMembers" class="loading">
-                    구성원 정보를 불러오는 중...
-                  </div>
-                  
+                <!-- 구성원 정보 섹션 -->
+                <div class="member-section" (click)="$event.stopPropagation()">
+                  <p class="company-members">구성원<span class="member-count">({{ companyMembers.length || 0 }})</span></p>
                   <!-- 구성원 목록 -->
-                  <div class="members-list" *ngIf="!isLoadingMembers">
-                    <div *ngFor="let member of companyMembers" class="member-card">
-                      <p class="member-name">{{ member.name }} <span class="position">{{ member.position }}</span></p>
-                      <p class="member-phone">
-                        <span class="icon">📞</span> {{ member.phone }}
-                      </p>
-                      <p class="member-email">
-                        <span class="icon">📧</span> {{ member.email }}
-                      </p>
+                  <div class="members-container">
+                    <!-- 로딩 중 표시 -->
+                    <div *ngIf="isLoadingMembers" class="loading">
+                      구성원 정보를 불러오는 중...
                     </div>
-                    
-                    <!-- 데이터 없을 때 -->
-                    <div *ngIf="companyMembers.length === 0" class="no-members">
-                      등록된 구성원이 없습니다.
+                    <!-- 구성원 목록 -->
+                    <div class="members-list" *ngIf="!isLoadingMembers">
+                      <div *ngFor="let member of companyMembers" class="member-card">
+                        <p class="member-name">{{ member.name }} <span class="position">{{ member.position }}</span></p>
+                        <p class="member-phone">
+                          <span class="icon">📞</span> {{ member.phone }}
+                        </p>
+                        <p class="member-email">
+                          <span class="icon">📧</span> {{ member.email }}
+                        </p>
+                      </div>
+                      <!-- 데이터 없을 때 -->
+                      <div *ngIf="companyMembers.length === 0" class="no-members">
+                        등록된 구성원이 없습니다.
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </ng-container>
+            <ng-template #companyList>
+              <!-- 회사가 선택 안 된 경우: 전체 목록 보여주기 -->
+              <ul class="company-list-ul">
+                <li class="company-list-li" *ngFor="let company of companies" (click)="selectCompany(company, $event)">
+                  <div class="company-item">
+                    <div class="company-logo">
+                      <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
+                      <div *ngIf="!company.logo_url" class="placeholder-logo">{{ company.name[0] }}</div>
+                    </div>
+                    <div class="company-info">
+                      <h4>{{ company.name }}</h4>
+                      <div class="company-details">
+                        <p class="company-type">{{ company.industry || '업종 정보 없음' }}</p>
+                        <p class="company-contact" *ngIf="getCompanyPhone(company)">
+                          <span class="contact-icon">📞</span> {{ getCompanyPhone(company) }}
+                        </p>
+                        <p class="company-address">
+                          <span class="address-icon">📍</span> {{ company.address }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -782,9 +806,10 @@ export class CompaniesComponent implements OnInit {
 
   // 목록 버튼 클릭 시 바텀시트 열기
   openBottomSheet(event: Event) {
-    event.stopPropagation(); // 이벤트 전파 중단
-    this.isBottomSheetExpanded = false; // 완전히 펼치지 않음
-    // 화면 높이의 60% 위치로 설정 (SNAP_BOTTOM에서 화면 높이의 60%만큼 위로)
+    event.stopPropagation(); 
+    this.isBottomSheetExpanded = false; 
+    this.selectedCompanyId = null; // 목록 버튼 누르면 선택 해제
+    // 화면 높이의 60% 위치
     const screenHeight = window.innerHeight;
     this.bottomSheetPosition = this.SNAP_BOTTOM - (screenHeight * 0.6);
   }
@@ -792,7 +817,7 @@ export class CompaniesComponent implements OnInit {
   // 회사 연락처 정보 가져오기 (members 필드에서 추출)
   getCompanyPhone(company: Company): string {
     if (!company.members || !Array.isArray(company.members) || company.members.length === 0) {
-      // 임시 번호 생성 (실제 서비스에서는 제거)
+      // 임시 번호 
       return `12-345-12345`;
     }
     
