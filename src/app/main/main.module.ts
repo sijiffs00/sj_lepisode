@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { CompaniesComponent } from './companies/companies.component';
 import { FilterByIdPipe } from './companies/filter-by-id.pipe';
 
@@ -9,7 +10,8 @@ import { FilterByIdPipe } from './companies/filter-by-id.pipe';
     FilterByIdPipe
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    FormsModule
   ],
   exports: [
     CompaniesComponent

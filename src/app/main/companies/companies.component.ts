@@ -20,7 +20,8 @@ declare global {
           목록
         </button>
         <div class="search-input-container">
-          <input type="text" placeholder="검색어를 입력해 주세요." class="search-input">
+          <input type="text" placeholder="검색어를 입력해 주세요." class="search-input"
+            [(ngModel)]="searchTerm" (keyup.enter)="onSearch()">
         </div>
         <button class="close-button">
           <span class="close-icon">×</span>
@@ -96,7 +97,7 @@ declare global {
             <ng-template #companyList>
               <!-- 회사가 선택 안 된 경우: 전체 목록 보여주기 -->
               <ul class="company-list-ul">
-                <li class="company-list-li" *ngFor="let company of companies" (click)="selectCompany(company, $event)">
+                <li class="company-list-li" *ngFor="let company of filteredCompanies" (click)="selectCompany(company, $event)">
                   <div class="company-item">
                     <div class="company-logo">
                       <img *ngIf="company.logo_url" [src]="company.logo_url" alt="{{ company.name }} 로고">
@@ -570,6 +571,8 @@ declare global {
 })
 export class CompaniesComponent implements OnInit {
   public companies: Company[] = [];
+  public filteredCompanies: Company[] = [];
+  public searchTerm: string = '';
   private map: any;
   private geocoder: any;
   isBottomSheetExpanded = false;
@@ -602,6 +605,7 @@ export class CompaniesComponent implements OnInit {
       if (response.error) throw response.error;
       
       this.companies = response.data || [];
+      this.filteredCompanies = this.companies; // 처음엔 전체 기업을 보여줌
       console.log('로드된 회사 데이터:', this.companies);
       
       if (this.companies.length > 0) {
@@ -701,12 +705,12 @@ export class CompaniesComponent implements OnInit {
     console.log('모든 마커 추가 완료!');
   }
 
-  // 터치 시작 시
+
   onTouchStart(event: TouchEvent) {
     this.touchStartY = event.touches[0].clientY;
     this.initialPosition = this.bottomSheetPosition;
     
-    // 트랜지션 효과 제거로 드래그 시 자연스럽게
+
     const sheet = event.currentTarget as HTMLElement;
     sheet.style.transition = 'none';
   }
@@ -755,7 +759,7 @@ export class CompaniesComponent implements OnInit {
   }
 
   selectCompany(company: Company, event: Event) {
-    event.stopPropagation(); // 이벤트 버블링 중지
+    event.stopPropagation(); 
     
     // 이미 선택된 회사라면 접기/펼치기 토글
     if (this.selectedCompanyId === company.id) {
@@ -764,7 +768,7 @@ export class CompaniesComponent implements OnInit {
       return;
     }
     
-    // 선택된 회사로 지도 이동하기
+    // 선택된 회사로 지도 이동
     this.moveMapToCompany(company);
     
     // 선택된 회사 설정 및 구성원 데이터 로드
@@ -833,11 +837,21 @@ export class CompaniesComponent implements OnInit {
         }
       }
       
-      // 연락처가 없으면 기본 번호 반환
+  
       return `12-345-12345`;
     } catch (error) {
       console.error('전화번호 추출 에러:', error);
       return `12-345-12345`;
     }
+  }
+
+  onSearch() {
+    if (!this.searchTerm.trim()) {
+      this.filteredCompanies = this.companies;
+      return;
+    }
+    this.filteredCompanies = this.companies.filter(company =>
+      company.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
   }
 } 
